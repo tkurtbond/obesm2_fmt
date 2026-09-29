@@ -119,6 +119,21 @@ Confirmed in olibfyaml or ArgParser unless noted.
 - **UTF-8 in string literals passes through unchanged** (confirmed
   live: `"em dash: —"` prints correctly). `CHAR` is a byte, so `LEN`
   and `Strings.Length` count bytes, not characters.
+- **voc won't pass `F()^` (a dereferenced function result) as an open
+  array** (`err 59`). Assign it to a variable first, or use a
+  procedure that takes a `Besm2Str.String`: `Besm2Out.Str(Bold("x"))`,
+  `Besm2Layout.Row3(Hbolding("VALUE"), ...)`. (Confirmed in step 2.)
+- **Local records and pointers are not zeroed.** Always
+  `Besm2Str.Reset` a `Buffer` and `Besm2Str.Clear` a `List` before
+  using it; never test a local pointer for NIL before assigning it.
+  (Confirmed in step 2.)
+- **No string concatenation operator** (`"a" + 0AX` doesn't compile):
+  use `Besm2Str.Concat`/`Concat3` or a `Buffer`. A `FOR` loop needs an
+  integer control variable, not `CHAR`.
+- **voc's `Files` caches files by inode** and `Files.Close` only
+  flushes, so re-reading a file rewritten in place gives the old
+  contents. Use a new file name for each capture in tests. (Confirmed
+  in step 2.)
 - **Allocation is what makes voc programs slow** (olibfyaml's PLAN.md,
   Phase 6). BESM files are small, so clarity wins here, but don't
   allocate per character in inner loops.

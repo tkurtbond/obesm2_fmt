@@ -149,11 +149,13 @@ customizers and details with `"; "`; `mecha` read with
 
 ## 4. Output (`Besm2Out`, `Besm2Layout`, the four backends)
 
-`Besm2Out` exports `String(s)`, `Char(c)`, `Ln`, `Tabs(n)`, `Repeat(c, n)`,
-`Int(i)`, plus `ToFile(path): BOOLEAN` and `Close`. By default it
-writes through `Out`; after `ToFile` it writes through a `Files.Rider`
-on a new file, registered on `Close`. Only the backends and main write
-output, and only through `Besm2Out`.
+`Besm2Out` exports `String(s)`, `Str(s: String)`, `Char(c)`, `Ln`,
+`Repeat(c, n)` (tabs for h-m-m are `Repeat(09X, n)`; numbers go through
+`Besm2Str.Int`), plus `ToFile(path)` and `Close`, which return a
+`Platform.ErrorCode`, and `Flush`. It buffers, and writes with
+`Platform.Write` to standard output or, after `ToFile`, to a file made
+by `Platform.New` (see step 2 for why not `Out` or `Files`). Only the
+backends and main write output, and only through `Besm2Out`.
 
 `Besm2Layout` is a direct port of `Text_Layout`:
 
@@ -321,9 +323,45 @@ Each step ends with its tests passing and PLAN.md updated.
      wherever that cache is set up the same way. Revisit in step 10 if
      `make install` needs to work elsewhere (a custom link with
      `libvoc-OC.a` and a shared `libfyaml` would do it).
-2. **`Besm2Str`, `Besm2Config`, `Besm2Out`, `Besm2Layout`** with
+2. [done] **`Besm2Str`, `Besm2Config`, `Besm2Out`, `Besm2Layout`** with
    `TestStr` and `TestLayout`. This is where the UTF-8 width and wrapping
-   rules get pinned down.
+   rules get pinned down. `TestLayout` ports all 30 checks of the Ada
+   `test_text_layout.adb`, in order, and all pass, including the golden
+   STAT-table rows and the `Rocket Pod` wrap with and without the
+   embedded newline. It adds checks for whitespace runs in `WordWrap`, a
+   wrapped `Row2` with its continuation line, and `EmptyRow`. `TestStr`
+   covers lengths, `Trim`, `Int` down to `MIN(INTEGER)`, `Buffer`,
+   `List`, `Join`, `LessCI` (including the Ada fold of lead byte
+   `C3X`) and the stability of `SortCI`. Design changes and findings:
+   - **voc won't pass a dereferenced function result, `F()^`, to an
+     open-array parameter** (`err 59 illegal open array parameter`).
+     So `Row2`/`Row3` take `String`s, not `ARRAY OF CHAR`, and
+     `Besm2Out.Str(s: String)` sits beside `Besm2Out.String`, letting
+     `Row3(Hbolding("VALUE"), ...)` and `Besm2Out.Str(Bold("Size:"))`
+     be written without temporaries. Procedures that mostly take
+     literals keep `ARRAY OF CHAR`.
+   - **voc doesn't zero local records**: a local `Buffer`'s pointer is
+     garbage before first use, not NIL. `Besm2Str.Reset` always
+     allocates; `Buffer` and `List` must be `Reset`/`Clear`ed before
+     use. (Found when "allocate only if NIL" halted with "Index out of
+     range".)
+   - **`Besm2Out` writes through `Platform`, not `Files`**:
+     `Platform.New` returns an error code for a file it can't create,
+     while `Files` creates the file only at `Register` and halts on
+     failure. It keeps its own 8 KB buffer for standard output too
+     (voc's `Out.Ln` flushes on every line), so it must be flushed
+     before anything else is written to the same place.
+   - **voc's `Files` caches files by inode**: `Files.Old` returns the
+     cached `File`, with its old buffers, and `Files.Close` doesn't
+     drop it. A capture file rewritten in place (same inode, since
+     `Platform.New` truncates) read back as the first capture's text.
+     `TestLayout` uses one file per capture.
+   - `AddInt` takes `INTEGER` and works in `LONGINT` (64 bits under
+     `-OC`), so negating `MIN(INTEGER)` can't overflow and `DIV`/`MOD`
+     see only non-negative values.
+   - Oberon-2 has no string concatenation operator and no `CHAR` `FOR`
+     loops; `(*` in a comment (a quoted Scheme expression) opens a
+     nested comment. All three came up.
 3. **`Besm2Cli`** and the main module's option handling: check the
    exit statuses of `-h`, bad options, bad `-u`, bad `-w`.
 4. **`Besm2Entities`** plus a debug dump (under `-d`) to check loading
