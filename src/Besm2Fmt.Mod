@@ -3,11 +3,10 @@ MODULE Besm2Fmt; (* besm2_fmt: BESM 2E YAML to reStructuredText *)
 (* Oberon-2 port of the Ada besm2_fmt (besm2_fmt_main.adb), itself a
    port of besm2-rst.scm.  See PLAN.md, section 7.
 
-   Of the output formats, terse and grid are ported so far (PLAN.md,
-   section 9); the others write each entity as one line, its number and
-   name. *)
+   Of the output formats, raw ms is not ported yet (PLAN.md, section 9);
+   it writes each entity as one line, its number and name. *)
 
-IMPORT Besm2Cli, Besm2Config, Besm2Entities, Besm2Grid, Besm2Out, Besm2Str, Besm2Terse,
+IMPORT Besm2Cli, Besm2Config, Besm2Entities, Besm2Grid, Besm2Hmm, Besm2Out, Besm2Str, Besm2Terse,
   Err, Fyaml, FyamlStreams, Out, Platform, SYSTEM;
 
 (* strerror, for an -o/--output file that can't be created. *)
@@ -75,6 +74,7 @@ BEGIN
     CASE Besm2Config.format OF
       Besm2Config.Terse: Besm2Terse.ProcessEntity(e, count)
     | Besm2Config.Grid: Besm2Grid.ProcessEntity(e, count)
+    | Besm2Config.Hmm: Besm2Hmm.ProcessEntity(e, count)
     ELSE
       (* Stand-in for the formats not ported yet (PLAN.md, section 9). *)
       Besm2Out.Str(Besm2Str.Int(count)); Besm2Out.String(": ");

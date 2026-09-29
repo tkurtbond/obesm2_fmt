@@ -511,7 +511,23 @@ Each step ends with its tests passing and PLAN.md updated.
      - `composite-multi-doc-2e.yaml`: `besm2-rst` loses documents of a
        multi-document file (the bug the Ada PLAN mentions); Ada and the
        port read them all.
-7. **`Besm2Hmm`**, golden tests, including `-R` with `-o`.
+7. [done] **`Besm2Hmm`**, golden tests, including `-R` with `-o`.
+   Byte-identical to the Ada binary on the first successful build, for
+   all five `-2e` fixtures under 10 flag sets (`-H`, `-H -s`, `-H -S`,
+   `-H -s -S`, `-H -b`, `-H -i -l -M`, `-H -L 2`, `-H -D -n`,
+   `-H -R Root -L 1`, `-t -H`); 10 h-m-m cases in `golden.cases`, 146
+   golden files in all, all passing (the 96 from steps 5 and 6
+   regenerated unchanged). Findings:
+   - **`-R` with `-o`** can't be a golden case (the output goes to a
+     file), so it was checked by hand: `-H -R Root -o FILE` writes the
+     root line to standard output and the entities to FILE, and both
+     match the Ada binary's. `-R` without `-H` is ignored by both.
+   - **No new departures from `besm2-rst`.** Diffing `./besm2_fmt -n -H`
+     against `besm2-rst -H` shows only those found in step 6: the
+     no-break space before `(effective)`, `effective: ""` as `()`, the
+     sort position of `élan vital`, and the documents `besm2-rst` loses
+     from `composite-multi-doc-2e.yaml`. The byte-counted underline
+     doesn't arise: an outline has no underlines.
 8. **`Besm2RawMs`**, golden tests.
 9. **Error handling** golden tests, `-o`, standard input, several files.
 10. **Makefile parity**: `rst`, `pdf`, `install` (to `$HOME/local/bin`)
