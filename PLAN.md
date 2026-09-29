@@ -200,6 +200,7 @@ Ada behaviour to match:
 | Case | Ada | Status |
 |---|---|---|
 | Bad YAML, missing key, malformed number, top level not a sequence, bad customizer | `besm2_fmt: error processing FILE: MESSAGE` on stderr, skip the rest of that file, continue with the next | 0 |
+| A list or item of the wrong shape (`stats: 5`, an entity that isn't a mapping) | Ada: unhandled assertion failure. Port: reported like the row above (step 4) | Ada 1, port 0 |
 | Unknown option, missing option argument, bad `-u`/`-U` | diagnostic on stderr | 2 (Ada: 0 for bad `-u`/`-U`; see step 3) |
 | Non-numeric or out-of-range `-w`/`-L` | diagnostic on stderr | 2 |
 | `-h`/`--help` | usage on stdout | 1 |
@@ -408,8 +409,45 @@ Each step ends with its tests passing and PLAN.md updated.
      `besm2_fmt: error processing FILE: ...` (which named it twice).
      Errors the port finds itself keep the Ada wording. Standard input
      is `<stdin>` in both.
-4. **`Besm2Entities`** plus a debug dump (under `-d`) to check loading
-   before any backend exists.
+4. [done] **`Besm2Entities`**, checked by `TestEntities` rather than
+   by a debug dump under `-d` as first planned: the Ada version never
+   reads `-d`/`Debugging`, so making `-d` print something would be a
+   behaviour it doesn't have. `TestEntities` (52 checks) loads the real
+   `enyon-boase-2e` and `FV2021-Coleopteran-2e` fixtures and made-up
+   ones, with expected values taken from the fixtures and the Ada
+   binary's terse output: fields, absent fields as NIL, document order
+   for stats and derived values, sorting of attributes, defects and
+   skills, trimming, the embedded newline kept in `Rocket Pod`'s
+   details, every subtotal and the entity total, `mecha: false`, and
+   every customizer shape, whose details string (`air, Fire; Area −1,
+   Big: b, c −3, Range −5, Short +-1, Slow +1, Zone: a −2; hi`, also
+   with `-n`) was copied from the Ada output. A deliberately broken sort
+   made three checks fail, so they bite. The main module now loads each
+   entity and writes a placeholder line (number and name); `cli.sh`
+   checks that a bad entity writes nothing, ends its file but not the
+   run, with status 0. Findings:
+   - **YAML of the wrong shape crashes the Ada version**: an entity
+     that isn't a mapping, `stats: 5`, a list item that isn't a mapping
+     or a scalar, `enhancements: Area`, a customizer `[Range]` (it reads
+     item 2 before checking the length), an applies-to that is a
+     sequence. Each dies with `ADA.ASSERTIONS.ASSERTION_ERROR`, a failed
+     precondition in alibfyaml, status 1, and no file name. olibfyaml
+     would halt the same way (an `ASSERT` on the node kind), so the
+     port checks shapes first and reports them as input errors, with
+     the node's path: `besm2_fmt: error processing FILE: /0/stats: not
+     a sequence`, status 0, like any other bad data. Deliberate
+     difference.
+   - Values of the right shape but wrong content (a missing key,
+     `points: x`, `mecha: yes`, a non-scalar `name`) are reported by
+     olibfyaml, as the Ada version reports them through alibfyaml.
+   - All five item kinds extend `NamedDesc` (a `name` field), so one
+     `List` type and one stable insertion sort serve all of them; a
+     backend takes an item out with a type guard, `items[i](Stat)`.
+   - **Oberon-2 needs every `CONST`/`TYPE`/`VAR` before the first
+     procedure** of a module, and **a read-only exported field
+     (`stats-`) can't be passed as a `VAR` parameter** outside its
+     module; pass it by value (`List` is a pointer and a count, so
+     copying is cheap).
 5. **`Besm2Terse`** first (no column layout), then golden tests for it,
    as the Ada port did.
 6. **`Besm2Grid`**, golden tests.

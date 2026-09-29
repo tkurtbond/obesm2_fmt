@@ -3,11 +3,11 @@ MODULE Besm2Fmt; (* besm2_fmt: BESM 2E YAML to reStructuredText *)
 (* Oberon-2 port of the Ada besm2_fmt (besm2_fmt_main.adb), itself a
    port of besm2-rst.scm.  See PLAN.md, section 7.
 
-   The entities and output formats aren't ported yet (PLAN.md, section
-   9): for now each entity is only counted, with one line per document,
-   written through Besm2Out. *)
+   The output formats aren't ported yet (PLAN.md, section 9): for now
+   each entity is loaded and written as one line, its number and
+   name. *)
 
-IMPORT Besm2Cli, Besm2Config, Besm2Out, Besm2Str, Err, Fyaml, FyamlStreams,
+IMPORT Besm2Cli, Besm2Config, Besm2Entities, Besm2Out, Besm2Str, Err, Fyaml, FyamlStreams,
   Out, Platform, SYSTEM;
 
 (* strerror, for an -o/--output file that can't be created. *)
@@ -49,10 +49,15 @@ BEGIN
 END ReportYaml;
 
 (* The entities of one document.  count runs on across the documents of
-   a file: 1 for the file's first entity, whichever document it is in. *)
+   a file: 1 for the file's first entity, whichever document it is in.
+   Each entity is loaded completely before any of it is written, so one
+   that fails writes nothing; those before it are already written.
+   FALSE after reporting an error, which ends the file, as in the Ada
+   version. *)
 PROCEDURE ProcessDocument(d: Fyaml.Document; VAR source: ARRAY OF CHAR;
                           VAR count: INTEGER): BOOLEAN;
-  VAR root: Fyaml.Node; msg: Besm2Str.String;
+  VAR root, item: Fyaml.Node; it: Fyaml.ItemIter; e: Besm2Entities.Entity;
+    yerr: Fyaml.Error; msg: Besm2Str.String;
 BEGIN
   root := d.Root();
   IF (root = NIL) OR ~root.IsSequence() THEN
@@ -60,9 +65,18 @@ BEGIN
     Report(source, msg^);
     RETURN FALSE
   END;
-  INC(count, SHORT(root.Length()));
-  Besm2Out.String(source); Besm2Out.String(": "); Besm2Out.Str(Besm2Str.Int(count));
-  Besm2Out.String(" entities so far"); Besm2Out.Ln;
+  root.Items(it);
+  WHILE it.Next(item) DO
+    IF ~Besm2Entities.Load(item, e, yerr, msg) THEN
+      IF yerr # NIL THEN ReportYaml(yerr) ELSE Report(source, msg^) END;
+      RETURN FALSE
+    END;
+    INC(count);
+    (* Stand-in for the output formats (PLAN.md, section 9). *)
+    Besm2Out.Str(Besm2Str.Int(count)); Besm2Out.String(": ");
+    IF e.name # NIL THEN Besm2Out.Str(e.name) END;
+    Besm2Out.Ln
+  END;
   RETURN TRUE
 END ProcessDocument;
 

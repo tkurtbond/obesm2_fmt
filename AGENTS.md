@@ -133,6 +133,11 @@ Confirmed in olibfyaml or ArgParser unless noted.
 - **No string concatenation operator** (`"a" + 0AX` doesn't compile):
   use `Besm2Str.Concat`/`Concat3` or a `Buffer`. A `FOR` loop needs an
   integer control variable, not `CHAR`.
+- **Every `CONST`, `TYPE` and `VAR` of a module comes before its first
+  procedure** (`err 41 END missing` otherwise). (Confirmed in step 4.)
+- **A read-only exported field (`e.stats-`) can't be passed as a `VAR`
+  parameter** outside its module (`err 76`); pass it by value.
+  (Confirmed in step 4.)
 - **voc's `Files` caches files by inode** and `Files.Close` only
   flushes, so re-reading a file rewritten in place gives the old
   contents. Use a new file name for each capture in tests. (Confirmed

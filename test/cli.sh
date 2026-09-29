@@ -54,6 +54,26 @@ check "a missing file is reported and the run goes on, exit 0" 0 \
   '^besm2_fmt: nosuch\.yaml: error: No such file or directory$' "$f" nosuch.yaml "$f"
 check "-- ends the options" 0 '^besm2_fmt: -t: error: No such file or directory$' -- -t
 
+# A bad entity is reported, writes nothing, and ends its file; entities
+# before it are written, and the run goes on with the next file.  Its
+# number counts on across the documents of a file.
+printf -- '- name: Good\n- name: Bad\n  stats: [{name: B}]\n- name: Never\n' >"$tmp/bad.yaml"
+"$prog" "$tmp/bad.yaml" "$data/composite-multi-doc-2e.yaml" >"$tmp/out" 2>&1
+status=$?
+if [ $status -eq 0 ] && grep -q 'Good' "$tmp/out" && ! grep -q 'Bad\|Never' "$tmp/out" \
+   && grep -q 'bad.yaml: error: /1/stats/0: missing required key "value"' "$tmp/out" \
+   && grep -q 'Coleopteran' "$tmp/out"; then
+  echo "ok   - a bad entity ends its file, not the run, with status 0"
+else
+  echo "FAIL - a bad entity ends its file, not the run, with status 0"; sed 's/^/    /' "$tmp/out"; failed=$((failed + 1))
+fi
+printf -- '- 5\n' >"$tmp/shape.yaml"
+check "YAML of the wrong shape is an input error, not a halt" 0 \
+  'error processing .*shape\.yaml: /0: not a mapping$' "$tmp/shape.yaml"
+printf -- 'a: 1\n' >"$tmp/map.yaml"
+check "a top level that isn't a sequence is reported" 0 \
+  'expected a top-level YAML sequence of entities in .*map\.yaml$' "$tmp/map.yaml"
+
 # -R/--hmm-root goes to standard output even under -o, as in the Ada
 # version and besm2-rst.scm; everything else goes to the file.
 "$prog" -H -R Root -L 2 -o "$tmp/file" "$f" >"$tmp/stdout" 2>&1
