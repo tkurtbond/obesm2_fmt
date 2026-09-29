@@ -17,6 +17,7 @@ open questions. This file is operational notes, not a design doc.
 |---|---|
 | Ada program being ported | `~/Repos/RPG/Tools/besm2_fmt/` (`src/`, `PLAN.md`, `GNUmakefile`) |
 | Ada binary (the golden-output oracle) | `~/Repos/RPG/Tools/besm2_fmt/besm2_fmt` (build with `make` there) |
+| Original Scheme binary | `~/local/bin/besm2-rst` (on `PATH`); note its defaults differ from the Ada version's (the minus sign) |
 | Original Scheme program | `besm2-rst.scm` in besm-tools |
 | ArgParser (command-line parsing) | `~/Repos/Oberon/ArgParser/` (`AGENTS.md`, `ArgParser.Mod`, `Err.Mod`); installed copies in `$OBERON_MODULES` (default `/usr/local/sw/versions/oberon/include`) |
 | olibfyaml (YAML) | `~/Repos/Oberon/olibfyaml/` (`AGENTS.md`, `README.md`, `src/FyThin.Mod`, `src/Fyaml.Mod`, `src/FyamlStreams.Mod`) |
@@ -32,14 +33,14 @@ either library. Most of what they say about voc applies here too.
 ```sh
 export PATH=/usr/local/sw/versions/voc/git/bin:$PATH
 make            # obj/ (voc output) and ./besm2_fmt
-make test       # unit tests, then test/cli.sh (options, exit statuses)
+make test       # unit tests, test/cli.sh (options, exit statuses), test/golden.sh check
+make golden     # regenerate test/golden/ from the reference programs
 make clean      # rm -rf obj besm2_fmt
 make print-VAR  # show a makefile variable
 ```
 
-Planned, not yet written (PLAN.md, section 9): `make golden` to
-regenerate `test/golden/` from the Ada binary, and `make rst pdf
-install` as in the Ada `GNUmakefile`. Update this list as they land.
+Planned, not yet written (PLAN.md, section 9): `make rst pdf install`
+as in the Ada `GNUmakefile`. Update this list as they land.
 
 - **Everything is compiled with `-OC`**, as the first voc option,
   because olibfyaml requires it: its `.sym` files and runtime library
@@ -77,14 +78,25 @@ install` as in the Ada `GNUmakefile`. Update this list as they land.
 
 ## Testing policy
 
-- **The Ada binary is the reference.** Output on standard output must
-  match it byte for byte for every fixture and flag combination in
-  `test/golden/`. Where PLAN.md records a deliberate difference (error
-  message text on standard error, the usage text), the golden test
-  checks exit status only, not the text.
-- **Regenerate golden files from the Ada binary with `make golden`;
-  never hand-edit one.** If a golden file looks wrong, the bug is in the
-  Ada program: report it rather than making the port disagree.
+- **Golden cases** are lines in `test/golden.cases`: reference program,
+  id, fixture glob, flags. Add a line there for new coverage, run `make
+  golden`, and review the new files before committing them.
+- **The Ada binary is the reference.** For every case in
+  `test/golden.cases`, output (standard output and error together) must
+  match it byte for byte, with status 0. The one exception so far: where
+  the Ada version is known to be wrong and the port follows
+  `besm2-rst.scm` instead, the case's reference is `scheme`, the real
+  `besm2-rst` (`~/local/bin/besm2-rst`). Those fixtures don't end in
+  `-2e.yaml`, so the Ada cases (`*-2e`) skip them. Currently only the
+  sort of names equal but for case (PLAN.md, step 5).
+- Error cases, whose messages differ from the Ada version's on purpose
+  (PLAN.md, section 5), aren't golden cases: `test/cli.sh` checks their
+  exit status and a line of their message.
+- **Regenerate golden files with `make golden`; never hand-edit one.**
+  If a golden file looks wrong, the bug is in the reference program:
+  report it rather than making the port disagree silently. A
+  deliberate disagreement needs a PLAN.md entry and, if the output
+  differs, a `scheme` case or a note on why it isn't a golden case.
 - A new behaviour worth testing gets a fixture in `test/data/` and a
   line in the golden flag matrix, not a one-off manual diff.
 - Unit tests (`test/Test*.Mod`) print `ok   - <label>` / `FAIL -

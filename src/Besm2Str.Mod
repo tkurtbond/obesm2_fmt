@@ -250,7 +250,7 @@ BEGIN
 END AppendList;
 
 (* The items joined with sep between them; "" for an empty list. *)
-PROCEDURE Join*(VAR l: List; sep: ARRAY OF CHAR): String;
+PROCEDURE Join*(l: List; sep: ARRAY OF CHAR): String;
   VAR buf: Buffer; i: INTEGER;
 BEGIN
   Reset(buf);

@@ -1,0 +1,28 @@
+# Golden-output cases for test/golden.sh (PLAN.md, section 8).
+#
+# One case per line: REF ID FIXTURES FLAGS...
+#   REF       the program whose output is the reference: "ada" (the Ada
+#             besm2_fmt, $ADA_BESM2_FMT) or "scheme" (besm2-rst,
+#             $SCHEME_BESM2_RST), used only where the Ada version is
+#             known to be wrong and the port follows besm2-rst.scm
+#   ID        names the golden files: test/golden/FIXTURE.ID.out
+#   FIXTURES  a shell glob in test/data, without ".yaml"
+#   FLAGS     the command-line options, before the fixture's path
+# Blank lines and lines starting with # are ignored.  Golden files hold
+# standard output and standard error together; every case must exit 0.
+
+# ---- terse (step 5) ----
+ada    t          *-2e   -t
+ada    s-t        *-2e   -s -t
+ada    t-bold     *-2e   -t -b -l -M
+ada    t-italic   *-2e   -t -i -n
+ada    t-bold-it  *-2e   -t -b -i
+ada    t-page     *-2e   -t -p
+ada    t-page-D   *-2e   -t -p -D
+ada    t-under    *-2e   -t -u = -U ~
+ada    t-last     *-2e   -H -m -t
+
+# The Ada sort isn't stable: names equal but for case come out in an
+# arbitrary order.  besm2-rst's, like the port's, keeps document order
+# (PLAN.md, step 5).
+scheme t          sort-ties   -t

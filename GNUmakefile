@@ -36,7 +36,7 @@ MAIN    := Besm2Fmt
 # Library modules, in import order.  Args is rtl/Args.Mod, standing in
 # for voc's Args, which exists only in the -O2 library (AGENTS.md).
 SHAREDMODS := Args Err ArgParser FyThin Fyaml FyamlStreams
-PROGMODS   := Besm2Str Besm2Config Besm2Out Besm2Layout Besm2Cli Besm2Entities
+PROGMODS   := Besm2Str Besm2Config Besm2Out Besm2Layout Besm2Cli Besm2Entities Besm2Terse
 LIBMODS    := $(SHAREDMODS) $(PROGMODS)
 
 # Test support modules, and test programs (test/<name>.Mod, main modules).
@@ -53,7 +53,7 @@ $(foreach m,ArgParser.Mod Err.Mod,$(if $(wildcard $(addsuffix /$(m),$(subst :, ,
 $(if $(wildcard $(OLIBFYAML)/src/Fyaml.Mod),,$(error olibfyaml not found in OLIBFYAML ($(OLIBFYAML))))
 endif
 
-.PHONY: all test clean
+.PHONY: all test golden clean
 
 all: $(PROGRAM)
 
@@ -74,6 +74,7 @@ $(OBJ)/Besm2Out.o: $(OBJ)/Besm2Str.o
 $(OBJ)/Besm2Layout.o: $(OBJ)/Besm2Config.o $(OBJ)/Besm2Out.o $(OBJ)/Besm2Str.o
 $(OBJ)/Besm2Cli.o: $(OBJ)/ArgParser.o $(OBJ)/Besm2Config.o $(OBJ)/Besm2Str.o $(OBJ)/Err.o
 $(OBJ)/Besm2Entities.o: $(OBJ)/Besm2Layout.o $(OBJ)/Besm2Str.o $(OBJ)/Fyaml.o
+$(OBJ)/Besm2Terse.o: $(OBJ)/Besm2Config.o $(OBJ)/Besm2Entities.o $(OBJ)/Besm2Layout.o $(OBJ)/Besm2Out.o $(OBJ)/Besm2Str.o
 $(SUPPOBJS): $(LIBOBJS)
 
 # The main module (-m); voc links the imported modules' .o files from
@@ -89,14 +90,24 @@ $(OBJ)/Test%: test/Test%.Mod $(LIBOBJS) $(SUPPOBJS) | $(OBJ)
 	cd $(OBJ) && $(VOC) $(VOCFLAGS) $(abspath $<) -m
 
 # Every unit test, run from $(OBJ) (where TestLayout writes its capture
-# files), then the command-line checks of test/cli.sh; fail at the end
-# if any failed.
+# files), then the command-line checks of test/cli.sh, then the
+# golden-output comparison of test/golden.sh; fail at the end if any
+# failed.
 test: $(PROGRAM) $(TESTBINS)
 	@status=0; for t in $(TESTS); do \
 	  echo "== $$t"; (cd $(OBJ) && ./$$t) || status=1; \
 	done; \
 	echo "== cli.sh"; test/cli.sh ./$(PROGRAM) || status=1; \
+	echo "== golden.sh"; test/golden.sh check ./$(PROGRAM) || status=1; \
 	exit $$status
+
+# Rewrite test/golden/ from the reference programs: the Ada besm2_fmt
+# and, for the cases where the port follows it instead, besm2-rst.  See
+# test/golden.cases.  Needs neither this program nor its build.
+ADA_BESM2_FMT    ?= $(HOME)/Repos/RPG/Tools/besm2_fmt/besm2_fmt
+SCHEME_BESM2_RST ?= besm2-rst
+golden:
+	ADA_BESM2_FMT=$(ADA_BESM2_FMT) SCHEME_BESM2_RST=$(SCHEME_BESM2_RST) test/golden.sh generate
 
 clean:
 	rm -rf $(OBJ) $(PROGRAM)

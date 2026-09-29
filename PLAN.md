@@ -76,8 +76,9 @@ obesm2_fmt/
     TestStr.Mod, TestLayout.Mod   -- unit tests (TestLayout ports test_text_layout.adb)
     Check.Mod                     -- ok/FAIL reporting, as olibfyaml's
     data/                         -- YAML fixtures: copies of the Ada test-data plus synthetic ones
-    golden/                       -- expected output, generated from the Ada binary
-    run-golden.sh                 -- runs the flag matrix and compares
+    golden/                       -- expected output, generated from the Ada binary (or besm2-rst)
+    golden.cases, golden.sh       -- the flag matrix, and the script that checks or regenerates it
+    cli.sh                        -- command-line checks: exit statuses, messages
   GNUmakefile
   AGENTS.md, PLAN.md, README.md
 ```
@@ -287,7 +288,8 @@ which is harmless here).
   an entity with no name, UTF-8 names that sort differently by byte and
   by case-folding, and error cases (missing key, bad integer, non-sequence
   root, bad customizer, bad YAML, a missing file among good ones).
-  `run-golden.sh` runs each fixture through a flag matrix: none, `-s`,
+  `golden.sh` runs each fixture through a flag matrix
+  (`test/golden.cases`, built up format by format from step 5 on): none, `-s`,
   `-1`, `-B`, `-D`, `-n`, `-w 72`, `-u = -U ~`, `-t`, `-s -t`,
   `-t -b -l -M`, `-t -i`, `-t -p`, `-H`, `-H -s -S`, `-H -b`,
   `-H -R Root -L 1`, `-m`, `-s -m`, `-m -n`. Plus: standard input vs a
@@ -448,8 +450,36 @@ Each step ends with its tests passing and PLAN.md updated.
      (`stats-`) can't be passed as a `VAR` parameter** outside its
      module; pass it by value (`List` is a pointer and a count, so
      copying is cheap).
-5. **`Besm2Terse`** first (no column layout), then golden tests for it,
-   as the Ada port did.
+5. [done] **`Besm2Terse`** first (no column layout), then golden tests for it,
+   as the Ada port did. Its output was byte-identical to the Ada
+   binary's on the first build, on all four real fixtures with and
+   without `-s`, and on a new made-up fixture, `synthetic-2e.yaml`
+   (every customizer shape, elements, effective levels, alternatives,
+   specialisations, `mecha: true` and `false`, an unnamed entity, a
+   tagline and size, UTF-8 names in the sort, a multi-line block
+   scalar in defect details), under `-b -l -M`, `-i -n`, `-b -i`, `-p`,
+   `-p -D`, `-u = -U ~` and `-H -m -t` (the last format flag wins).
+   The golden framework is in place:
+   - `test/golden.cases` lists cases as `REF ID FIXTURES FLAGS`;
+     `test/golden.sh check` compares standard output and error together
+     with `test/golden/FIXTURE.ID.out` and requires status 0, and `make
+     golden` (`test/golden.sh generate`) rewrites the files from the
+     reference program. `make test` runs the check. 46 cases so far, all
+     passing. As a control, checking `besm2-rst` itself against them
+     fails 18 (its minus sign differs), so the comparison bites.
+   - **The Ada sort isn't stable**, answering the open question.
+     `sort-ties.yaml` (names equal but for case) comes out of the Ada
+     binary as `ARMOUR 3, armour 1, Armour 2, armour 4`, an artifact of
+     GNAT's `Generic_Sorting`; the real `besm2-rst`
+     (`~/local/bin/besm2-rst`, Chicken's merge sort) keeps document
+     order, `armour 1, Armour 2, ARMOUR 3, armour 4`, as the port's
+     insertion sort does. The port keeps its stable sort, and
+     `golden.cases` takes that fixture's golden file from `besm2-rst`
+     (`REF` = `scheme`), not the Ada binary. The Ada fixtures are
+     `*-2e.yaml`; `sort-ties.yaml` has no `-2e` so they don't pick it
+     up. (`besm2-rst -t` also matches the port on `enyon-boase-2e`.)
+   - `Besm2Str.Join` now takes its `List` by value, so a read-only
+     `List` field of an item can be joined directly.
 6. **`Besm2Grid`**, golden tests.
 7. **`Besm2Hmm`**, golden tests, including `-R` with `-o`.
 8. **`Besm2RawMs`**, golden tests.
@@ -472,10 +502,7 @@ Each step ends with its tests passing and PLAN.md updated.
   from ASCII-only folding (`besm2-rst.scm` folds by Unicode character).
   Plan: copy Ada's folding exactly, so the output matches; revisit
   only if the Ada behaviour is declared a bug.
-- **Sort stability.** GNAT's `Generic_Sorting` isn't documented as
-  stable; this port's insertion sort is. The two differ only for
-  entries whose names are equal ignoring case, which no fixture has.
-  A synthetic fixture will show whether the Ada order is stable in
-  practice; if not, decide which to follow.
+- ~~**Sort stability.**~~ Resolved in step 5: the Ada sort isn't
+  stable, `besm2-rst`'s is, and the port follows `besm2-rst`.
 - ~~**`-o` to an unwritable path**~~: Resolved in step 3. Ada exits 1
   (unhandled `Name_Error`); the port reports the OS reason and exits 1.

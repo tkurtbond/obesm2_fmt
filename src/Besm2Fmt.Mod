@@ -3,12 +3,12 @@ MODULE Besm2Fmt; (* besm2_fmt: BESM 2E YAML to reStructuredText *)
 (* Oberon-2 port of the Ada besm2_fmt (besm2_fmt_main.adb), itself a
    port of besm2-rst.scm.  See PLAN.md, section 7.
 
-   The output formats aren't ported yet (PLAN.md, section 9): for now
-   each entity is loaded and written as one line, its number and
+   Of the output formats, only terse is ported so far (PLAN.md, section
+   9); the others write each entity as one line, its number and
    name. *)
 
-IMPORT Besm2Cli, Besm2Config, Besm2Entities, Besm2Out, Besm2Str, Err, Fyaml, FyamlStreams,
-  Out, Platform, SYSTEM;
+IMPORT Besm2Cli, Besm2Config, Besm2Entities, Besm2Out, Besm2Str, Besm2Terse,
+  Err, Fyaml, FyamlStreams, Out, Platform, SYSTEM;
 
 (* strerror, for an -o/--output file that can't be created. *)
 PROCEDURE -AincludeString '#include <string.h>';
@@ -72,10 +72,14 @@ BEGIN
       RETURN FALSE
     END;
     INC(count);
-    (* Stand-in for the output formats (PLAN.md, section 9). *)
-    Besm2Out.Str(Besm2Str.Int(count)); Besm2Out.String(": ");
-    IF e.name # NIL THEN Besm2Out.Str(e.name) END;
-    Besm2Out.Ln
+    CASE Besm2Config.format OF
+      Besm2Config.Terse: Besm2Terse.ProcessEntity(e, count)
+    ELSE
+      (* Stand-in for the formats not ported yet (PLAN.md, section 9). *)
+      Besm2Out.Str(Besm2Str.Int(count)); Besm2Out.String(": ");
+      IF e.name # NIL THEN Besm2Out.Str(e.name) END;
+      Besm2Out.Ln
+    END
   END;
   RETURN TRUE
 END ProcessDocument;
