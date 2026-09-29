@@ -1,0 +1,7 @@
+# voc/gcc output: see GNUmakefile
+/obj/
+# rendered test output (reST, PDF, HTML)
+/build/
+# the program, copied from obj/Besm2Fmt
+/besm2_fmt
+.~/

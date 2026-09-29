@@ -32,14 +32,14 @@ either library. Most of what they say about voc applies here too.
 ```sh
 export PATH=/usr/local/sw/versions/voc/git/bin:$PATH
 make            # obj/ (voc output) and ./besm2_fmt
-make test       # unit tests, then golden-output comparison
-make golden     # regenerate test/golden/ from the Ada binary
-make rst pdf    # the same rendered outputs the Ada GNUmakefile builds, into build/
-make clean
+make test       # unit tests (golden-output comparison to come)
+make clean      # rm -rf obj besm2_fmt
+make print-VAR  # show a makefile variable
 ```
 
-(Targets not yet written are described in PLAN.md; update this list as
-they land.)
+Planned, not yet written (PLAN.md, section 9): `make golden` to
+regenerate `test/golden/` from the Ada binary, and `make rst pdf
+install` as in the Ada `GNUmakefile`. Update this list as they land.
 
 - **Everything is compiled with `-OC`**, as the first voc option,
   because olibfyaml requires it: its `.sym` files and runtime library
@@ -66,6 +66,11 @@ they land.)
   of the main module; voc reads it from the environment.
 - The main module is `Besm2Fmt` (an Oberon identifier can't contain
   `_`); the makefile copies `obj/Besm2Fmt` to `./besm2_fmt`.
+- Link main modules with `-m`, not `-M`: `-M` links fully statically,
+  and there is no static `libfyaml`. `libvoc-OC.so` is found at run
+  time through the system `ld.so` cache.
+- A new library module goes in `PROGMODS` (in import order), a unit
+  test in `TESTS`.
 
 ## Testing policy
 

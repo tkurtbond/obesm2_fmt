@@ -297,12 +297,30 @@ which is harmless here).
 
 Each step ends with its tests passing and PLAN.md updated.
 
-1. **Scaffolding.** `GNUmakefile` (`obj/` for voc output, `build/` for
+1. [done] **Scaffolding.** `GNUmakefile` (`obj/` for voc output, `build/` for
    rendered reST/PDF as in the Ada makefile, `vpath` for
    `OBERON_MODULES`, `OLIBFYAML`, `-OC`, exported `LDLIBS`, copying
    `obj/Besm2Fmt` to `besm2_fmt`), `rtl/Args.Mod`, `.gitignore`,
    `test/Check.Mod`, and a stub `Besm2Fmt` that imports `ArgParser` and
    `FyamlStreams`, to prove the whole toolchain links under `-OC`.
+   The stub counts the entities in each document of each file; on the
+   four Ada test files it reports 2, 1+1 (two documents), 1 and 1, as
+   expected. `-h` prints ArgParser's usage; `--bogus` gives ArgParser's
+   error and status 2; a missing file gives olibfyaml's
+   `nosuch.yaml: error: No such file or directory`. A second `make`
+   does nothing. Findings:
+   - The makefile's single `$(OBJ)/%.o: %.Mod` rule finds each module
+     through `vpath` in `rtl`, `src`, `test`, `OBERON_MODULES` and
+     `$(OLIBFYAML)/src`, and passes voc the absolute path.
+   - **voc's `-M` (fully static link) doesn't work here**: there is no
+     static `libfyaml` (`ld: cannot find -lfyaml`). The program is
+     linked with `-m`, dynamically against `libfyaml.so.0` and
+     `libvoc-OC.so`. The binary has no rpath; `libvoc-OC.so` is found
+     through the system `ld.so` cache (`ldconfig -p` lists it under
+     `/usr/local/sw/versions/voc/git/lib`), so an installed copy runs
+     wherever that cache is set up the same way. Revisit in step 10 if
+     `make install` needs to work elsewhere (a custom link with
+     `libvoc-OC.a` and a shared `libfyaml` would do it).
 2. **`Besm2Str`, `Besm2Config`, `Besm2Out`, `Besm2Layout`** with
    `TestStr` and `TestLayout`. This is where the UTF-8 width and wrapping
    rules get pinned down.
