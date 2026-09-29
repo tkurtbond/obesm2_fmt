@@ -32,7 +32,7 @@ either library. Most of what they say about voc applies here too.
 ```sh
 export PATH=/usr/local/sw/versions/voc/git/bin:$PATH
 make            # obj/ (voc output) and ./besm2_fmt
-make test       # unit tests (golden-output comparison to come)
+make test       # unit tests, then test/cli.sh (options, exit statuses)
 make clean      # rm -rf obj besm2_fmt
 make print-VAR  # show a makefile variable
 ```
@@ -71,6 +71,9 @@ install` as in the Ada `GNUmakefile`. Update this list as they land.
   time through the system `ld.so` cache.
 - A new library module goes in `PROGMODS` (in import order), a unit
   test in `TESTS`.
+- `test/cli.sh` checks the command line: exit statuses and a line each
+  case's output must contain. Add a `check` line there for a new
+  option or error case.
 
 ## Testing policy
 

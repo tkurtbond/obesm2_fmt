@@ -36,7 +36,7 @@ MAIN    := Besm2Fmt
 # Library modules, in import order.  Args is rtl/Args.Mod, standing in
 # for voc's Args, which exists only in the -O2 library (AGENTS.md).
 SHAREDMODS := Args Err ArgParser FyThin Fyaml FyamlStreams
-PROGMODS   := Besm2Str Besm2Config Besm2Out Besm2Layout
+PROGMODS   := Besm2Str Besm2Config Besm2Out Besm2Layout Besm2Cli
 LIBMODS    := $(SHAREDMODS) $(PROGMODS)
 
 # Test support modules, and test programs (test/<name>.Mod, main modules).
@@ -70,7 +70,9 @@ $(OBJ)/ArgParser.o: $(OBJ)/Args.o $(OBJ)/Err.o
 $(OBJ)/Fyaml.o: $(OBJ)/FyThin.o
 $(OBJ)/FyamlStreams.o: $(OBJ)/Fyaml.o $(OBJ)/FyThin.o
 $(OBJ)/Besm2Config.o: $(OBJ)/Besm2Str.o
+$(OBJ)/Besm2Out.o: $(OBJ)/Besm2Str.o
 $(OBJ)/Besm2Layout.o: $(OBJ)/Besm2Config.o $(OBJ)/Besm2Out.o $(OBJ)/Besm2Str.o
+$(OBJ)/Besm2Cli.o: $(OBJ)/ArgParser.o $(OBJ)/Besm2Config.o $(OBJ)/Besm2Str.o $(OBJ)/Err.o
 $(SUPPOBJS): $(LIBOBJS)
 
 # The main module (-m); voc links the imported modules' .o files from
@@ -86,11 +88,14 @@ $(OBJ)/Test%: test/Test%.Mod $(LIBOBJS) $(SUPPOBJS) | $(OBJ)
 	cd $(OBJ) && $(VOC) $(VOCFLAGS) $(abspath $<) -m
 
 # Every unit test, run from $(OBJ) (where TestLayout writes its capture
-# file); fail at the end if any failed.
+# files), then the command-line checks of test/cli.sh; fail at the end
+# if any failed.
 test: $(PROGRAM) $(TESTBINS)
 	@status=0; for t in $(TESTS); do \
 	  echo "== $$t"; (cd $(OBJ) && ./$$t) || status=1; \
-	done; exit $$status
+	done; \
+	echo "== cli.sh"; test/cli.sh ./$(PROGRAM) || status=1; \
+	exit $$status
 
 clean:
 	rm -rf $(OBJ) $(PROGRAM)

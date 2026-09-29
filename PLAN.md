@@ -200,7 +200,7 @@ Ada behaviour to match:
 | Case | Ada | Status |
 |---|---|---|
 | Bad YAML, missing key, malformed number, top level not a sequence, bad customizer | `besm2_fmt: error processing FILE: MESSAGE` on stderr, skip the rest of that file, continue with the next | 0 |
-| Unknown option, missing option argument, bad `-u`/`-U` | diagnostic on stderr | 2 |
+| Unknown option, missing option argument, bad `-u`/`-U` | diagnostic on stderr | 2 (Ada: 0 for bad `-u`/`-U`; see step 3) |
 | Non-numeric or out-of-range `-w`/`-L` | diagnostic on stderr | 2 |
 | `-h`/`--help` | usage on stdout | 1 |
 
@@ -228,8 +228,13 @@ ArgParser's own error exit isn't exported. `-h`: the handler calls
 `-w` values below 25 make the Ada program fail with "invalid numeric
 option argument" (status 2) as soon as it builds a 3-column row, since
 the wrapped column would have no width (confirmed: `-w 24` fails).
-The port declares `-w` with range `25 .. 32767` in `MakeIntOption`, so
-ArgParser rejects it up front with the same status 2.
+The port declares `-w` with range `25 .. MAX(INTEGER)` in
+`MakeIntOption`, so ArgParser rejects it up front with the same
+status 2.
+
+Step 3 found that a bad option *value* (`-u xx`, `-w 0`) doesn't give
+status 2 in the Ada version, as the table above expected, but status 0
+after carrying on; the port exits 2. See step 3.
 
 ## 6. Command line (`Besm2Cli`)
 
@@ -243,7 +248,7 @@ argument handler appends file names to a list in `Besm2Cli`. Defaults:
 `boldHead` and `unicodeMinus` TRUE, `tableWidth` 60, `underliner` `-`,
 `subunderliner` 0X (unset), `headSep` `=`.
 
-`-L`'s range is `0 .. 32767`; `-o` and `-R` copy their argument into a
+`-L`'s range is `0 .. MAX(INTEGER)`; `-o` and `-R` copy their argument into a
 `Besm2Str.String` (ArgParser truncates arguments at 4095 characters,
 which is harmless here).
 
@@ -254,8 +259,8 @@ which is harmless here).
    output via `Out`**, before any `-o` redirection (Ada and Scheme both
    do this).
 3. If `-o`: `Besm2Out.ToFile(path)`; if the file can't be created,
-   report and exit 1 (the Ada version would raise an unhandled
-   `Name_Error` here; check what status it gives and match it).
+   report and exit 1 (the Ada version raises an unhandled
+   `Name_Error` here, which also exits 1).
 4. For each file (or standard input if none): open a `FyamlStreams`
    stream; for each document, check the root is a sequence, and for
    each item `Load` it and call the selected backend with a running
@@ -362,8 +367,47 @@ Each step ends with its tests passing and PLAN.md updated.
    - Oberon-2 has no string concatenation operator and no `CHAR` `FOR`
      loops; `(*` in a comment (a quoted Scheme expression) opens a
      nested comment. All three came up.
-3. **`Besm2Cli`** and the main module's option handling: check the
+3. [done] **`Besm2Cli`** and the main module's option handling: check the
    exit statuses of `-h`, bad options, bad `-u`, bad `-w`.
+   `Besm2Cli` adds the 22 options in the Ada order with the Ada
+   descriptions. The main module now has its final shape (parse; exit 1
+   after help; the `-R` line to standard output; `-o`; files or standard
+   input through `FyamlStreams`; a per-file error ends that file only;
+   `Besm2Out.Close`). An entity count stands in for the formats until
+   step 5. `test/cli.sh` (run by `make test`) checks 20 cases: status,
+   plus a line of output or error each must contain. `test/data/` now
+   holds copies of the four Ada `test-data` files. Findings, from
+   running the same cases against the Ada binary first:
+   - **The Ada version mishandles a bad option value.** `-u xx`,
+     `-U ab` and `-w 0` print "Invalid value for option ..." and then
+     parsing stops but the program carries on: it processes the files
+     named before the bad option, or, if there were none, reads
+     standard input (confirmed by feeding a YAML file on stdin), and
+     exits 0. Its main has a handler that exits 2 for exactly this
+     error, which is apparently never reached. **The port exits 2**,
+     the evident intent and ArgParser's status for every other
+     command-line mistake. Deliberate difference, not ported.
+   - `-w` is `25 .. MAX(INTEGER)`: the Ada version accepts `-w 1` and
+     fails at `-w 24` and below with "invalid numeric option argument",
+     status 2, once it writes a three-column row; `-w 25` works (a
+     one-character wrapped column). Same status, earlier and clearer.
+     `-L` is `0 .. MAX(INTEGER)`.
+   - `-w -5` and `-L -1`: Ada says "Argument Required" (it takes `-5`
+     for an option), status 2; ArgParser takes `-5` as the value and
+     says it is out of range, status 2.
+   - `-u=` sets the underliner to `=` (ArgParser takes the rest of the
+     cluster as the value); Ada took the next argument instead. Not
+     worth matching.
+   - **`-o` to a path that can't be created**: the Ada version dies with
+     an unhandled `NAME_ERROR`, status 1, showing the OS reason. The
+     port writes `besm2_fmt: can't create PATH: REASON` (from
+     `strerror`, through a private code procedure in `Besm2Fmt`) and
+     exits 1. (Closes the open question.)
+   - Errors from olibfyaml are written as `besm2_fmt: ` plus its
+     message, which already names the file, instead of
+     `besm2_fmt: error processing FILE: ...` (which named it twice).
+     Errors the port finds itself keep the Ada wording. Standard input
+     is `<stdin>` in both.
 4. **`Besm2Entities`** plus a debug dump (under `-d`) to check loading
    before any backend exists.
 5. **`Besm2Terse`** first (no column layout), then golden tests for it,
@@ -395,5 +439,5 @@ Each step ends with its tests passing and PLAN.md updated.
   entries whose names are equal ignoring case, which no fixture has.
   A synthetic fixture will show whether the Ada order is stable in
   practice; if not, decide which to follow.
-- **`-o` to an unwritable path**: find the Ada exit status and message
-  (step 7 of §7) before fixing the Oberon behaviour.
+- ~~**`-o` to an unwritable path**~~: Resolved in step 3. Ada exits 1
+  (unhandled `Name_Error`); the port reports the OS reason and exits 1.
