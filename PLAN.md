@@ -81,6 +81,7 @@ obesm2_fmt/
     cli.sh                        -- command-line checks: exit statuses, messages
   GNUmakefile
   AGENTS.md, PLAN.md, README.md
+  ADA-DIFFERENCES.md    -- every known way the Ada version differs or is defective
 ```
 
 Compile order (each depends only on earlier ones): `Args`, `Err`,

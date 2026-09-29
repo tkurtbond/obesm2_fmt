@@ -9,7 +9,9 @@ and items, and writes them as reStructuredText (grid tables, terse,
 raw ms/tbl) or as an h-m-m outline.
 
 See PLAN.md for the design, the module layout, the build order and
-open questions. This file is operational notes, not a design doc.
+open questions, and ADA-DIFFERENCES.md for every known way the Ada
+version differs from the port or is defective. This file is operational
+notes, not a design doc.
 
 ## Reference material
 
@@ -168,6 +170,12 @@ Confirmed in olibfyaml or ArgParser unless noted.
 - Comments explain why, and only claim what has been verified. If a
   comment depends on how voc, libfyaml or ArgParser behaves, test it
   with a throwaway program in the scratchpad first.
+- **Keep `ADA-DIFFERENCES.md` up to date.** Whenever a difference
+  between the Ada version and the port, or a defect in the Ada
+  version, is found or decided, add or update its entry there (with
+  the PLAN.md step that has the details) in the same change. That
+  includes defects the port copies, and Ada-versus-`besm2-rst`
+  departures found while comparing outputs.
 - Record decisions and findings in PLAN.md as they happen. Mark a
   finished step `[done]` and strike through an open question once it's
   decided.
