@@ -22,6 +22,18 @@ ada    t-page-D   *-2e   -t -p -D
 ada    t-under    *-2e   -t -u = -U ~
 ada    t-last     *-2e   -H -m -t
 
+# ---- grid, the default (step 6) ----
+ada    grid       *-2e
+ada    s          *-2e   -s
+ada    one        *-2e   -1
+ada    one-s-B    *-2e   -1 -s -B
+ada    no-bold    *-2e   -B -D
+ada    ascii      *-2e   -s -n
+ada    w72        *-2e   -w 72
+ada    w25        *-2e   -w 25
+ada    under      *-2e   -u = -U ~
+ada    emph       *-2e   -b -i -l -M -p
+
 # The Ada sort isn't stable: names equal but for case come out in an
 # arbitrary order.  besm2-rst's, like the port's, keeps document order
 # (PLAN.md, step 5).

@@ -151,8 +151,9 @@ BEGIN
 END SeparatorLine;
 
 (* Writes one "| ... |" line spanning the table: besm2-rst.scm's empty,
-   used between sections under -1/--one.  No Ada golden fixture used
-   -1, so this was ported by reading the Scheme. *)
+   used between sections under -1/--one.  The Ada port wrote this from
+   the Scheme's definition, with no fixture to check it; this port's -1
+   output matches both the Ada binary and besm2-rst (PLAN.md, step 6). *)
 PROCEDURE EmptyRow*;
 BEGIN
   Besm2Out.Char("|");

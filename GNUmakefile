@@ -36,7 +36,7 @@ MAIN    := Besm2Fmt
 # Library modules, in import order.  Args is rtl/Args.Mod, standing in
 # for voc's Args, which exists only in the -O2 library (AGENTS.md).
 SHAREDMODS := Args Err ArgParser FyThin Fyaml FyamlStreams
-PROGMODS   := Besm2Str Besm2Config Besm2Out Besm2Layout Besm2Cli Besm2Entities Besm2Terse
+PROGMODS   := Besm2Str Besm2Config Besm2Out Besm2Layout Besm2Cli Besm2Entities Besm2Terse Besm2Grid
 LIBMODS    := $(SHAREDMODS) $(PROGMODS)
 
 # Test support modules, and test programs (test/<name>.Mod, main modules).
@@ -75,6 +75,7 @@ $(OBJ)/Besm2Layout.o: $(OBJ)/Besm2Config.o $(OBJ)/Besm2Out.o $(OBJ)/Besm2Str.o
 $(OBJ)/Besm2Cli.o: $(OBJ)/ArgParser.o $(OBJ)/Besm2Config.o $(OBJ)/Besm2Str.o $(OBJ)/Err.o
 $(OBJ)/Besm2Entities.o: $(OBJ)/Besm2Layout.o $(OBJ)/Besm2Str.o $(OBJ)/Fyaml.o
 $(OBJ)/Besm2Terse.o: $(OBJ)/Besm2Config.o $(OBJ)/Besm2Entities.o $(OBJ)/Besm2Layout.o $(OBJ)/Besm2Out.o $(OBJ)/Besm2Str.o
+$(OBJ)/Besm2Grid.o: $(OBJ)/Besm2Config.o $(OBJ)/Besm2Entities.o $(OBJ)/Besm2Layout.o $(OBJ)/Besm2Out.o $(OBJ)/Besm2Str.o
 $(SUPPOBJS): $(LIBOBJS)
 
 # The main module (-m); voc links the imported modules' .o files from

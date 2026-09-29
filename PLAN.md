@@ -480,7 +480,36 @@ Each step ends with its tests passing and PLAN.md updated.
      up. (`besm2-rst -t` also matches the port on `enyon-boase-2e`.)
    - `Besm2Str.Join` now takes its `List` by value, so a read-only
      `List` field of an item can be joined directly.
-6. **`Besm2Grid`**, golden tests.
+6. [done] **`Besm2Grid`**, golden tests. Byte-identical to the Ada
+   binary on the first successful build, for all five `-2e` fixtures
+   under 11 flag sets (none, `-s`, `-1`, `-B`, `-D`, `-n`, `-w 72`,
+   `-w 25`, `-u = -U ~`, `-b -i -l -M`, `-1 -s -B`); 10 grid cases in
+   `golden.cases`, 96 golden files in all, all passing (the 46 from
+   step 5 regenerated unchanged). The only compile error was `F()^`
+   again. Findings:
+   - **`-1`/`--one` is now verified.** The Ada port wrote `Empty_Row`
+     from the Scheme's definition with no fixture; the port's `-1` and
+     `-1 -s` output matches the Ada binary and also `besm2-rst` (run
+     with `-n` here, since `besm2-rst` defaults to the ASCII minus).
+   - **Where the Ada version departs from `besm2-rst`**, found by
+     diffing grid output of `synthetic-2e.yaml` against `besm2-rst`.
+     The port follows Ada in each (the Ada binary is the reference),
+     but they are recorded here so they aren't rediscovered as port
+     bugs:
+     - Header underlines: `besm2-rst` counts characters (16 for
+       `Rana “Frog” Élan`), Ada counts bytes (21). Longer is harmless
+       in reST.
+     - `effective: ""`: `besm2-rst` writes `1 ()`, Ada skips the empty
+       value.
+     - The level and `(effective)` are joined by a no-break space
+       (`C2 A0`) in `besm2-rst`, an ordinary space in Ada.
+     - Case-insensitive order of non-ASCII names: `besm2-rst` folds by
+       Unicode character and puts `élan vital` before `“Quoted” Power`;
+       Ada's byte-wise Latin-1 fold puts it after. (See the open
+       question on this.)
+     - `composite-multi-doc-2e.yaml`: `besm2-rst` loses documents of a
+       multi-document file (the bug the Ada PLAN mentions); Ada and the
+       port read them all.
 7. **`Besm2Hmm`**, golden tests, including `-R` with `-o`.
 8. **`Besm2RawMs`**, golden tests.
 9. **Error handling** golden tests, `-o`, standard input, several files.
@@ -496,7 +525,10 @@ Each step ends with its tests passing and PLAN.md updated.
   (say as `oc-rtl/Args.Mod`, installed to `OBERON_MODULES/oc/`) so any
   `-OC` program, including olibfyaml users, can use ArgParser. That is
   a change to the ArgParser repo, so it needs the user's go-ahead.
-- **Case-insensitive sort beyond ASCII.** Ada's `To_Lower` also folds
+- **Case-insensitive sort beyond ASCII.** (Step 6 confirmed that
+  `besm2-rst` does order such names differently from Ada:
+  `élan vital` sorts before `“Quoted” Power` there, after it in Ada and
+  the port.) Ada's `To_Lower` also folds
   bytes `C0X..DEX` (Latin-1 capitals, except `D7X`), which in UTF-8
   are lead bytes, so it can order some non-ASCII names differently
   from ASCII-only folding (`besm2-rst.scm` folds by Unicode character).
