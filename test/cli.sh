@@ -53,6 +53,15 @@ check "-o to a directory that doesn't exist exits 1 with the OS reason" 1 \
 check "a missing file is reported and the run goes on, exit 0" 0 \
   '^besm2_fmt: nosuch\.yaml: error: No such file or directory$' "$f" nosuch.yaml "$f"
 check "-- ends the options" 0 '^besm2_fmt: -t: error: No such file or directory$' -- -t
+check "a directory is reported, not read as an empty file" 0 \
+  '^besm2_fmt: test/data: error: Is a directory$' test/data "$f"
+# A pipe given as a path (/dev/fd/N) must lose nothing to the check
+# that the file can be opened: libfyaml opens it again.
+if "$prog" <(cat "$f") | cmp -s - <("$prog" "$f"); then
+  echo "ok   - a pipe given as a path is read whole"
+else
+  echo "FAIL - a pipe given as a path is read whole"; failed=$((failed + 1))
+fi
 
 # A bad entity is reported, writes nothing, and ends its file; entities
 # before it are written, and the run goes on with the next file.  Its

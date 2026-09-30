@@ -704,10 +704,13 @@ Each step ends with its tests passing and PLAN.md updated.
       port's.
     - What still differs is only message wording (ADA-DIFFERENCES.md,
       3.3 to 3.5), and one defect found in the port while comparing:
-      a directory given as a file is silently read as empty
+      a directory given as a file was silently read as empty
       (ADA-DIFFERENCES.md, 6.1), since olibfyaml's `Fyaml.Unreadable`
-      checks only that the path opens. The Ada version now reports
-      `Is a directory`. Not fixed yet; the fix belongs in olibfyaml.
+      checked only that the path opens. The Ada version now reports
+      `Is a directory`, and so does the port, after a fix in olibfyaml
+      (`FyThin.OpenErrno` `fstat`s the file; reading it instead would
+      lose input from a pipe given as a path). `test/cli.sh` checks
+      both.
 
 ## Open questions
 

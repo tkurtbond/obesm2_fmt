@@ -95,8 +95,8 @@ differences, but they look like bugs:
 - An error in an entity ends the rest of its file, not just that
   entity, and the run's exit status is still 0.
 
-## 6. Defects in the port that the Ada version doesn't have
+## 6. Defects the port had, fixed
 
-| # | Port behaviour | Ada behaviour | Found |
+| # | Port behaviour before the fix | Both now | Found |
 |---|---|---|---|
-| 6.1 | **A directory given as a file is silently taken for an empty file**: nothing is written, no error, status 0. olibfyaml's `Fyaml.Unreadable` only checks that the path opens for reading, which a directory does, and libfyaml then finds no documents in it. Not fixed yet: the fix belongs in olibfyaml. | `besm2_fmt: test: Is a directory`, and the run goes on (alibfyaml `3053d06`). | Step 14 |
+| 6.1 | **A directory given as a file was silently taken for an empty file**: nothing written, no error, status 0. olibfyaml's `Fyaml.Unreadable` only checked that the path opens for reading, which a directory does, and libfyaml then found no documents in it. Fixed in olibfyaml (`FyThin.OpenErrno` gives `EISDIR` for a directory). | Reported, and the run goes on: `besm2_fmt: test: Is a directory` in Ada (alibfyaml `3053d06`), `besm2_fmt: test: error: Is a directory` here (3.4). | Step 14 |
