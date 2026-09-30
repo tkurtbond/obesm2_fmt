@@ -666,6 +666,18 @@ Each step ends with its tests passing and PLAN.md updated.
       `size` present but empty, blank-only taglines and details, an
       empty `effective`, and empty stat names and values, on which this
       port already matched the Ada binary.
+13. [done] **`make perfdata`**, for comparing this program with its
+    rewrite on Ropes (`~/Repos/RPG/Tools/obesm2_fmt2`, whose `make
+    perfcompare` runs it here and writes the report). It runs
+    `tools/perfdata.sh`, a file shared with that repo, which times this
+    program alone (instruction counts, CPU and wall time, peak memory)
+    and writes `build/perfdata.tsv`. The rewrite's PLAN.md, step 9, has
+    the results: on big inputs this program executes 1.25 to 2 times
+    the rope version's instructions in most cases, because `Buffer`
+    allocates at every `Reset` and copies at every `Get`, and it
+    collects garbage more often (672 collections against 255, terse
+    on 2,000 entities); on one small file it is
+    faster, since it doesn't allocate enough to trigger a collection.
 
 ## Open questions
 

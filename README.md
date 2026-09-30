@@ -123,6 +123,7 @@ make                # ./besm2_fmt
 make test           # unit tests, command-line checks, golden-output tests
 make valgrind       # the program under valgrind, over every fixture
 make benchmark      # time against the Ada binary (a Markdown report)
+make perfdata       # measure this program alone (build/perfdata.tsv), for obesm2_fmt2's make perfcompare
 make install        # to $(PREFIX)/bin, default ~/local/bin
 make uninstall
 make rst            # build/*.gen.rst from the test fixtures

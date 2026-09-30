@@ -70,7 +70,7 @@ $(foreach m,ArgParser.Mod Err.Mod,$(if $(wildcard $(addsuffix /$(m),$(subst :, ,
 $(if $(wildcard $(OLIBFYAML)/src/Fyaml.Mod),,$(error olibfyaml not found in OLIBFYAML ($(OLIBFYAML))))
 endif
 
-.PHONY: all test golden valgrind benchmark rst pdf install uninstall clean testclean
+.PHONY: all test golden valgrind benchmark perfdata rst pdf install uninstall clean testclean
 
 all: $(PROGRAM)
 
@@ -161,6 +161,21 @@ valgrind: $(PROGRAM) | $(OBJ)
 # standard output (make -s benchmark >report.md); see tools/benchmark.sh.
 benchmark: $(PROGRAM)
 	ADA_BESM2_FMT=$(ADA_BESM2_FMT) tools/benchmark.sh
+
+# Performance data for this program alone: tools/perfdata.sh (the same
+# file in obesm2_fmt and obesm2_fmt2) times it on inputs made from two
+# fixtures, in the four formats, and writes $(PERF_DATA), which
+# obesm2_fmt2's make perfcompare reads.  The settings are passed to the
+# script; PERF_CPU= (empty) turns pinning off.
+PERF_DATA       ?= $(BUILD)/perfdata.tsv
+PERF_COPIES     ?= 2000
+PERF_RUNS_SMALL ?= 31
+PERF_RUNS_BIG   ?= 7
+PERF_CPU        ?= 2
+perfdata: $(PROGRAM) | $(BUILD)
+	PERF_OUT=$(PERF_DATA) PERF_DIR=$(BUILD)/perf PERF_COPIES='$(PERF_COPIES)' \
+	  PERF_RUNS_SMALL='$(PERF_RUNS_SMALL)' PERF_RUNS_BIG='$(PERF_RUNS_BIG)' PERF_CPU='$(PERF_CPU)' \
+	  tools/perfdata.sh
 
 # Rewrite test/golden/ from the reference programs: the Ada besm2_fmt
 # and, for the cases where the port follows it instead, besm2-rst.  See

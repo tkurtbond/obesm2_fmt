@@ -39,6 +39,7 @@ make test       # unit tests, test/regs.sh, test/cli.sh (options, exit statuses)
 make golden     # regenerate test/golden/ from the reference programs
 make valgrind   # the program under valgrind over every fixture and path (about a minute)
 make benchmark  # timing against the Ada binary: make -s benchmark >PERFORMANCE-COMPARISON.md
+make perfdata   # measure this program alone: build/perfdata.tsv, for obesm2_fmt2's make perfcompare
 make rst        # build/*.gen.rst from test/data/*-2e.yaml, as the Ada GNUmakefile
 make pdf        # build/*.ms.pdf from those (pandoc, --template=tkb)
 make install    # to $(PREFIX)/bin, default ~/local/bin (DESTDIR for staging)
@@ -82,6 +83,11 @@ make print-VAR  # show a makefile variable
   time through the system `ld.so` cache.
 - A new library module goes in `PROGMODS` (in import order), a unit
   test in `TESTS`.
+- **`tools/perfdata.sh` is shared** with `~/Repos/RPG/Tools/obesm2_fmt2`,
+  the rewrite of this program on Ropes, whose `make perfcompare` runs
+  `make perfdata` here and compares the two. Keep the two copies
+  identical, and bump its `FORMAT_VERSION` when the data format
+  changes.
 - `test/cli.sh` checks the command line: exit statuses and a line each
   case's output must contain. Add a `check` line there for a new
   option or error case.
