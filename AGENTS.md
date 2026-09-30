@@ -35,8 +35,10 @@ either library. Most of what they say about voc applies here too.
 ```sh
 export PATH=/usr/local/sw/versions/voc/git/bin:$PATH
 make            # obj/ (voc output) and ./besm2_fmt
-make test       # unit tests, test/cli.sh (options, exit statuses), test/golden.sh check
+make test       # unit tests, test/regs.sh, test/cli.sh (options, exit statuses), test/golden.sh check
 make golden     # regenerate test/golden/ from the reference programs
+make valgrind   # the program under valgrind over every fixture and path (about a minute)
+make benchmark  # timing against the Ada binary: make -s benchmark >PERFORMANCE-COMPARISON.md
 make rst        # build/*.gen.rst from test/data/*-2e.yaml, as the Ada GNUmakefile
 make pdf        # build/*.ms.pdf from those (pandoc, --template=tkb)
 make install    # to $(PREFIX)/bin, default ~/local/bin (DESTDIR for staging)
@@ -162,6 +164,17 @@ Confirmed in olibfyaml or ArgParser unless noted.
 - **A read-only exported field (`e.stats-`) can't be passed as a `VAR`
   parameter** outside its module (`err 76`); pass it by value.
   (Confirmed in step 4.)
+- **voc's GC can free a pointer held only in a callee-saved register.**
+  voc compiles C without optimization, and gcc then keeps a finished
+  call argument in `rbx`/`r12`-`r15` while it evaluates the next one;
+  voc's GC scans only the stack, and its trick for spilling registers
+  doesn't work at `-O0`. So `Row3(H("a"), H("b"), H("c"))` could lose
+  a string when `H` allocated. The GNUmakefile's `CFLAGS` forbids those
+  registers in every module compiled here, and `test/regs.sh` checks
+  the objects. Keep `CFLAGS` exported, and run a clean build if the
+  flags ever change (`obj/cflags` should force it). valgrind can't see
+  this bug; only output checks on inputs big enough for many
+  collections can (`cli.sh`'s 1000-copy check). (Confirmed in step 11.)
 - **voc's `Files` caches files by inode** and `Files.Close` only
   flushes, so re-reading a file rewritten in place gives the old
   contents. Use a new file name for each capture in tests. (Confirmed

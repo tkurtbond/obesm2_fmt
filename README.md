@@ -121,6 +121,8 @@ You need:
 ```sh
 make                # ./besm2_fmt
 make test           # unit tests, command-line checks, golden-output tests
+make valgrind       # the program under valgrind, over every fixture
+make benchmark      # time against the Ada binary (a Markdown report)
 make install        # to $(PREFIX)/bin, default ~/local/bin
 make uninstall
 make rst            # build/*.gen.rst from the test fixtures
@@ -142,5 +144,7 @@ and `besm2-rst`. It's needed only when test cases are added.
   voc.
 - [PLAN.md](PLAN.md): the design of the port, the build order and the
   findings of each step.
+- [PERFORMANCE-COMPARISON.md](PERFORMANCE-COMPARISON.md): timings
+  against the Ada version, from `make benchmark`.
 - [ADA-DIFFERENCES.md](ADA-DIFFERENCES.md): every known way the Ada
   version differs from the port or is defective.

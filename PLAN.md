@@ -599,8 +599,51 @@ Each step ends with its tests passing and PLAN.md updated.
       be replaced; checked only with `DESTDIR` into a scratch directory.
     - README.md: what the program is, an example checked against the
       program, usage, exit statuses, building and the documents.
-11. Valgrind pass. Optionally, a benchmark against the Ada binary with
-    the Ada repo's `tools/benchmark.sh` inputs.
+11. [done] Valgrind pass. Optionally, a benchmark against the Ada binary with
+    the Ada repo's `tools/benchmark.sh` inputs. Findings:
+    - **`make valgrind`**: 123 runs (every fixture in five formats,
+      several files, standard input, empty standard input, `-o`, and
+      the early exits), each with no errors, nothing lost, and nothing
+      still reachable but voc's 256,024-byte heap chunk. It uses
+      olibfyaml's `test/voc-gc.supp` (the GC's conservative stack scan)
+      and `test/libfyaml.supp` (libfyaml's `realloc(buf, 0)` on empty
+      input) from its checkout. Also clean by hand on 650 KB and 970 KB
+      inputs (2000 entities and more), where the GC runs many times.
+      Control: without the suppressions, 12 runs fail.
+    - **The benchmark found a real bug that valgrind can't see: the GC
+      freed strings still in use.** In 2000-entity inputs about 1 grid
+      or raw ms header in 400 came out as garbage, always the last
+      cell of `Row3(H("LEVEL"), H("POINTS"), H("ATTRIBUTE"))` and the
+      like. The disassembly shows why: voc compiles C without
+      optimization, gcc evaluates the arguments right to left and keeps
+      each finished one only in a callee-saved register (`r12`, `rbx`)
+      while the next `H` allocates. voc's GC finds pointers on the stack
+      only; its "register pressure" loop, meant to push the callee-saved
+      registers there, does nothing at `-O0`, and nothing else on the
+      allocation path saves them. So a collection during that call
+      frees the string. (valgrind sees nothing wrong: the memory is
+      voc's own heap chunk.) Fixed for every call at once by building
+      with `CFLAGS=-ffixed-rbx -ffixed-r12 -ffixed-r13 -ffixed-r14
+      -ffixed-r15` (voc appends `$CFLAGS` to its cc command), so gcc
+      never uses them; `obj/cflags` rebuilds every object when CFLAGS
+      changes. Checked both ways on 2000- and 5000-entity inputs in six
+      flag sets: 12 of 24 runs differed from the Ada binary before, 0
+      after. `test/regs.sh` (in `make test`) fails if any object uses
+      those registers, and `cli.sh` checks that 1000 copies of an
+      entity come out as 1000 copies of its output in five flag sets
+      (it fails on the old build for grid, raw ms and `-1`). The
+      voc runtime library itself (`libvoc-OC.so`) is built without
+      these flags, so the hazard remains inside it; this program calls
+      it little. Anything else built with voc -- olibfyaml's own tests,
+      ArgParser's users -- may have the same bug.
+    - **Benchmark** (`make benchmark`, `tools/benchmark.sh`, report in
+      `PERFORMANCE-COMPARISON.md`): outputs are checked identical
+      first. One small file per run takes about as long as the Ada
+      binary (about 2 ms). On 2000 entities, as one document or as 2000,
+      the port takes 2 to 4 times as long (0.35 to 0.8 s against 0.17
+      to 0.32 s), with the same peak memory. A short `perf` profile of
+      terse on 2000 entities shows most samples in libfyaml's scanner
+      and `malloc`, few in the Oberon code; not investigated further.
 
 ## Open questions
 

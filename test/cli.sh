@@ -122,4 +122,23 @@ else
   echo "FAIL - no file names reads standard input"; failed=$((failed + 1))
 fi
 
+# Enough entities for many garbage collections: each copy of an entity
+# must come out the same as the first.  Before the GNUmakefile's CFLAGS,
+# the collector freed strings kept only in registers, and about 1 grid
+# header in 400 came out as garbage (PLAN.md, step 11).
+n=1000
+{ echo ---; for ((i = 0; i < n; i++)); do tail -n +2 "$f"; done; } >"$tmp/many.yaml"
+for flags in "" "-t" "-H" "-m" "-s -1"; do
+  # $flags is split into words on purpose.
+  # shellcheck disable=SC2086
+  "$prog" $flags "$f" >"$tmp/one"
+  for ((i = 0; i < n; i++)); do cat "$tmp/one"; done >"$tmp/expected"
+  # shellcheck disable=SC2086
+  if "$prog" $flags "$tmp/many.yaml" 2>&1 | cmp -s - "$tmp/expected"; then
+    echo "ok   - $n entities come out as $n copies of one ($flags)"
+  else
+    echo "FAIL - $n entities come out as $n copies of one ($flags)"; failed=$((failed + 1))
+  fi
+done
+
 if [ "$failed" -eq 0 ]; then echo "All checks passed."; else echo "$failed check(s) failed."; exit 1; fi
