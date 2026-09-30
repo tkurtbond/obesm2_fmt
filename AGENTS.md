@@ -92,8 +92,12 @@ as in the Ada `GNUmakefile`. Update this list as they land.
   `-2e.yaml`, so the Ada cases (`*-2e`) skip them. Currently only the
   sort of names equal but for case (PLAN.md, step 5).
 - Error cases, whose messages differ from the Ada version's on purpose
-  (PLAN.md, section 5), aren't golden cases: `test/cli.sh` checks their
-  exit status and a line of their message.
+  (PLAN.md, section 5), are golden cases in `ada:stdout` mode: only
+  standard output is compared, and `test/cli.sh` checks their exit
+  status and a line of their message. Inputs that crash the Ada version
+  (`test/data/shape-*.yaml`) can't be golden cases; they are `cli.sh`
+  checks only. Several files, standard input and `-o` are golden cases
+  in the `all`, `stdin` and `file` modes (see `test/golden.cases`).
 - **Regenerate golden files with `make golden`; never hand-edit one.**
   If a golden file looks wrong, the bug is in the reference program:
   report it rather than making the port disagree silently. A

@@ -70,6 +70,37 @@ fi
 printf -- '- 5\n' >"$tmp/shape.yaml"
 check "YAML of the wrong shape is an input error, not a halt" 0 \
   'error processing .*shape\.yaml: /0: not a mapping$' "$tmp/shape.yaml"
+check "a customizer of one item is an input error, not a halt" 0 \
+  'error processing .*shape-customizer-short\.yaml: /1/attributes/0/enhancements/0: customizer sequence too short$' \
+  "$data/shape-customizer-short.yaml"
+check "stats: with no value is an input error, not a halt" 0 \
+  'error processing .*shape-null-stats\.yaml: /1/stats: not a sequence$' "$data/shape-null-stats.yaml"
+check "YAML that doesn't parse is reported gcc style" 0 \
+  '^besm2_fmt: .*bad-yaml\.yaml:6:1: error: missing comma in flow mapping$' "$data/bad-yaml.yaml"
+check "a bad integer is reported with its position and path" 0 \
+  '^besm2_fmt: .*bad-int\.yaml:5:42: error: /1/stats/0/points: not a valid integer: "lots"$' "$data/bad-int.yaml"
+check "a missing key is reported with its path" 0 \
+  '^besm2_fmt: .*bad-missing-key\.yaml: error: /1/stats/0: missing required key "points"$' "$data/bad-missing-key.yaml"
+check "a bad customizer is reported in the Ada wording, with its path" 0 \
+  'error processing .*bad-customizer-map\.yaml: /1/attributes/0/limiters/0: do not understand customizer$' \
+  "$data/bad-customizer-map.yaml"
+check "a file with no documents is not an error" 0 '' "$data/edge-empty.yaml"
+check "an empty document is an error" 0 \
+  'expected a top-level YAML sequence of entities in .*bad-empty-doc\.yaml$' "$data/bad-empty-doc.yaml"
+check "-o to /dev/full exits 1 with the OS reason" 1 \
+  '^besm2_fmt: error writing output: No space left on device$' -o /dev/full "$f"
+"$prog" "$f" >/dev/full 2>"$tmp/err"
+if [ $? -eq 1 ] && grep -q '^besm2_fmt: error writing output: No space left on device$' "$tmp/err"; then
+  echo "ok   - a full standard output exits 1 with the OS reason"
+else
+  echo "FAIL - a full standard output exits 1 with the OS reason"; sed 's/^/    /' "$tmp/err"; failed=$((failed + 1))
+fi
+"$prog" <"$data/bad-int.yaml" >/dev/null 2>"$tmp/err"
+if grep -q '^besm2_fmt: <stdin>:5:42: error: /1/stats/0/points: not a valid integer: "lots"$' "$tmp/err"; then
+  echo "ok   - errors in standard input name it <stdin>"
+else
+  echo "FAIL - errors in standard input name it <stdin>"; sed 's/^/    /' "$tmp/err"; failed=$((failed + 1))
+fi
 printf -- 'a: 1\n' >"$tmp/map.yaml"
 check "a top level that isn't a sequence is reported" 0 \
   'expected a top-level YAML sequence of entities in .*map\.yaml$' "$tmp/map.yaml"

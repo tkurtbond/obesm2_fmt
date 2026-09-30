@@ -546,7 +546,37 @@ Each step ends with its tests passing and PLAN.md updated.
    - Two more quirks kept, added to ADA-DIFFERENCES.md, section 5: the
      lines between sections are the three-blank indent alone, and one
      entity's `.TE` runs straight into the next entity's name.
-9. **Error handling** golden tests, `-o`, standard input, several files.
+9. [done] **Error handling** golden tests, `-o`, standard input, several files.
+   `golden.sh` now takes modes after the reference (`ada:stdout`,
+   `ada:all`, `ada:stdin`, `ada:file`; see `test/golden.cases`), so
+   these are golden cases too, compared with the Ada binary: for bad
+   input, standard output only, since the messages differ on purpose
+   (section 5); `test/cli.sh` checks the messages. 20 cases, 282 golden
+   files in all, all passing (the 223 from steps 5 to 8 regenerated
+   unchanged). New fixtures: `bad-*.yaml` (errors), `edge-*.yaml`
+   (empty input that isn't an error), `shape-*.yaml` (errors that halt
+   the Ada version, so `cli.sh` only). Findings:
+   - **The port matches the Ada binary** on everything that isn't an
+     Ada crash: what is written before an error in every format, that
+     nothing of the file is written after it, entity numbering (for
+     `-U`) starting again with each file, a bad file not ending the
+     run, standard input (including several documents), `-o` (a new
+     file, or an existing one, which is truncated; with several files;
+     with `-R`), and exit status 0 for bad input.
+   - **Empty input:** a file with no documents writes nothing and isn't
+     an error, in both. An empty document (`---` with nothing after
+     it) is an error, "expected a top-level YAML sequence", in both;
+     `besm2-rst` fails on it too.
+   - **Two more Ada crashes:** `stats:` with no value, and a customizer
+     of one item (already in ADA-DIFFERENCES.md, 1.3), halt on an
+     assertion with status 1; the port reports them as bad input.
+   - **Write errors** (ADA-DIFFERENCES.md, 1.10): output to a full
+     device raises an unhandled `DEVICE_ERROR` in Ada, status 1; the
+     port reports `error writing output: REASON`, status 1. A closed
+     pipe kills both with SIGPIPE (status 141).
+   - A customizer sequence of five or more items is accepted by both
+     (and by `besm2-rst`): the items after the counts-as value are all
+     applies-to text.
 10. **Makefile parity**: `rst`, `pdf`, `install` (to `$HOME/local/bin`)
     targets matching the Ada `GNUmakefile`; README.
 11. Valgrind pass. Optionally, a benchmark against the Ada binary with

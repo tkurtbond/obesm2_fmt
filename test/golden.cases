@@ -1,15 +1,30 @@
 # Golden-output cases for test/golden.sh (PLAN.md, section 8).
 #
-# One case per line: REF ID FIXTURES FLAGS...
+# One case per line: REF[:MODE...] ID FIXTURES FLAGS...
 #   REF       the program whose output is the reference: "ada" (the Ada
 #             besm2_fmt, $ADA_BESM2_FMT) or "scheme" (besm2-rst,
 #             $SCHEME_BESM2_RST), used only where the Ada version is
 #             known to be wrong and the port follows besm2-rst.scm
+#   MODE      how the program is run and what is compared, as many as
+#             apply (step 9):
+#               stdout  standard output only; for input errors, whose
+#                       messages differ from the Ada version's on
+#                       purpose (PLAN.md, section 5)
+#               all     every matching fixture in one run, as several
+#                       file arguments; the golden file is ID.out
+#               stdin   the fixture on standard input, not as an
+#                       argument
+#               file    with -o, to a scratch file; the golden file
+#                       holds standard output and error, a
+#                       "==== -o file ====" line, then the file
 #   ID        names the golden files: test/golden/FIXTURE.ID.out
-#   FIXTURES  a shell glob in test/data, without ".yaml"
-#   FLAGS     the command-line options, before the fixture's path
+#   FIXTURES  a shell glob in test/data, without ".yaml" (extglob is
+#             on, so @(a|b) works); several files in "all" mode are
+#             given in the glob's (sorted) order
+#   FLAGS     the command-line options, before the fixtures' paths
 # Blank lines and lines starting with # are ignored.  Golden files hold
-# standard output and standard error together; every case must exit 0.
+# standard output and standard error together unless the mode says
+# otherwise; every case must exit 0.
 
 # ---- terse (step 5) ----
 ada    t          *-2e   -t
@@ -55,6 +70,34 @@ ada    ms-emph    *-2e   -m -b -i -l -M -p
 ada    ms-under   *-2e   -m -u = -U ~
 ada    ms-one     *-2e   -m -1 -B -w 30
 ada    hmm-t-ms   *-2e   -H -t -m
+
+# ---- input errors, several files, standard input, -o (step 9) ----
+# Only standard output is compared for bad input: the messages differ
+# from the Ada version's on purpose (PLAN.md, section 5), and
+# test/cli.sh checks them.  What matters here is what is written before
+# the error, and that nothing is written after it.
+ada:stdout      bad        bad-*    -t
+ada:stdout      bad-grid   bad-*
+ada:stdout      bad-m      bad-*    -m
+ada             edge       edge-*
+ada             edge-t     edge-*   -t
+ada             edge-H     edge-*   -H
+ada             edge-m     edge-*   -m
+# Several files in one run: entity numbers (for -U) start again with
+# each file, and a bad file doesn't end the run.
+ada:all         files      *-2e     -U ~
+ada:all         files-t    *-2e     -t -U ~
+ada:all         files-m    *-2e     -m -U ~
+ada:all         files-H    *-2e     -H -R Root
+ada:all:stdout  files-bad  @(bad-int|composite-2e|bad-root|enyon-boase-2e)   -t
+# Standard input, and -o.
+ada:stdin       stdin      composite-multi-doc-2e   -U ~
+ada:stdin       stdin-t    composite-multi-doc-2e   -t
+ada:stdin:stdout stdin-bad bad-root   -t
+ada:file        o          @(enyon-boase-2e|composite-multi-doc-2e)   -t
+ada:file        o-grid     composite-2e
+ada:file:all    o-files    *-2e     -m -U ~
+ada:file        o-R        composite-2e   -H -R Root -L 1
 
 # The Ada sort isn't stable: names equal but for case come out in an
 # arbitrary order.  besm2-rst's, like the port's, keeps document order
