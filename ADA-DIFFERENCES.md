@@ -35,8 +35,8 @@ from `besm2-rst.scm`, whose behaviour is arguably the right one.
 
 | # | Ada behaviour | `besm2-rst` behaviour | Found |
 |---|---|---|---|
-| 2.1 | **Case-insensitive sorting folds bytes, not characters.** `Ada.Characters.Handling.To_Lower` lowers `A`..`Z` and Latin-1 bytes `C0`..`DE` (except `D7`). In UTF-8 those are lead bytes, so non-ASCII letters aren't lowered at all, and names starting with some of them move: `élan vital` sorts after `“Quoted” Power`. The result is neither ASCII-only nor Unicode folding. | Folds by Unicode character: `élan vital` sorts before `“Quoted” Power`. | Steps 2, 6 (all formats; seen in h-m-m in step 7); PLAN.md open question |
-| 2.2 | **Header underlines are as long as the name in bytes**, so a name with non-ASCII characters gets a longer underline than it needs (21 characters for the 16 of `Rana “Frog” Élan`). Harmless in reST. | As long as the name in characters. | Step 6 |
+| 2.1 | **Case-insensitive sorting folds bytes, not characters.** `Ada.Characters.Handling.To_Lower` lowers `A`..`Z` and Latin-1 bytes `C0`..`DE` (except `D7`). In UTF-8 those are lead bytes, so non-ASCII letters aren't lowered at all, and names starting with some of them move: `élan vital` sorts after `“Quoted” Power`. The result is neither ASCII-only nor Unicode folding. | Folds by Unicode character: `élan vital` sorts before `“Quoted” Power`. | Steps 2, 6 (all formats; seen in h-m-m and raw ms in steps 7, 8); PLAN.md open question |
+| 2.2 | **Header underlines are as long as the name in bytes**, so a name with non-ASCII characters gets a longer underline than it needs (21 characters for the 16 of `Rana “Frog” Élan`). Harmless in reST. | As long as the name in characters. | Step 6 (grid, terse); step 8 (raw ms) |
 
 ## 3. Deliberate differences between the Ada version and the port
 
@@ -57,16 +57,15 @@ aren't mistaken for port bugs when comparing with `besm2-rst`.
 | # | Ada (and port) | `besm2-rst` | Found |
 |---|---|---|---|
 | 4.1 | Unicode MINUS SIGN (U+2212) by default; `-n`/`--no-unicode-minus` gives ASCII | ASCII by default; `-n` gives U+2212 | The Ada port's own choice (its PLAN.md) |
-| 4.2 | `effective: ""` adds nothing to the level | Writes `1 ()` | Step 6 (grid, terse); step 7 (h-m-m) |
-| 4.3 | Level and `(effective)` joined by an ordinary space | Joined by a no-break space (`C2 A0`) | Step 6 (grid, terse); step 7 (h-m-m) |
+| 4.2 | `effective: ""` adds nothing to the level | Writes `1 ()` | Step 6 (grid, terse); steps 7, 8 (h-m-m, raw ms) |
+| 4.3 | Level and `(effective)` joined by an ordinary space | Joined by a no-break space (`C2 A0`) | Step 6 (grid, terse); steps 7, 8 (h-m-m, raw ms) |
 | 4.4 | Reads every document of a multi-document file | Loses documents (a `besm2-rst.scm` bug) | Steps 6, 7; the Ada PLAN.md |
 | 4.5 | `mecha: false` turns mecha off; `level` is required for attributes; h-m-m skills emphasize only name and level | Same now: these were `besm2-rst.scm` bugs, fixed upstream (besm-tools `8da3e95`, `6139f21`, `b04abb5`) and ported to Ada | The Ada PLAN.md |
 
 ## 5. Quirks kept on purpose
 
-Faithful to `besm2-rst.scm` in the Ada version and the port (the raw ms
-ones once that format is ported, step 8), so not differences, but they
-look like bugs:
+Faithful to `besm2-rst.scm` in the Ada version and the port, so not
+differences, but they look like bugs:
 
 - `-d`/`--debug` is accepted and does nothing.
 - `-R`/`--hmm-root`'s line goes to standard output even under `-o`.
@@ -75,9 +74,13 @@ look like bugs:
 - In terse and h-m-m, the Statistics subtotal is followed by a space
   that the other subtotals don't have; defect details are followed by
   two spaces, attribute details by one.
-- In grid, the skill points total is always shown, the other subtotals
-  only under `-s`; in raw ms, the grand total is shown only when
-  positive.
+- In grid and raw ms, the skill points total is always shown, the
+  other subtotals only under `-s`; in raw ms, the grand total is shown
+  only when positive, so an entity whose defects outweigh the rest has
+  no TOTAL row.
+- In raw ms, each line between sections is the three-blank indent
+  alone (trailing blanks), and there is no blank line between one
+  entity's `.TE` and the next entity's name. (Step 8.)
 - A limiter with a negative counts-as value is written `+-1`.
 - An error in an entity ends the rest of its file, not just that
   entity, and the run's exit status is still 0.

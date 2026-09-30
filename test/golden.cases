@@ -46,6 +46,16 @@ ada    hmm-D-n    *-2e   -H -D -n
 ada    hmm-root   *-2e   -H -R Root -L 1
 ada    t-hmm      *-2e   -t -H
 
+# ---- raw ms (step 8) ----
+ada    ms         *-2e   -m
+ada    ms-s       *-2e   -m -s
+ada    ms-s-n     *-2e   -m -s -n
+ada    ms-D       *-2e   -m -D
+ada    ms-emph    *-2e   -m -b -i -l -M -p
+ada    ms-under   *-2e   -m -u = -U ~
+ada    ms-one     *-2e   -m -1 -B -w 30
+ada    hmm-t-ms   *-2e   -H -t -m
+
 # The Ada sort isn't stable: names equal but for case come out in an
 # arbitrary order.  besm2-rst's, like the port's, keeps document order
 # (PLAN.md, step 5).

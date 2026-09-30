@@ -528,7 +528,24 @@ Each step ends with its tests passing and PLAN.md updated.
      sort position of `élan vital`, and the documents `besm2-rst` loses
      from `composite-multi-doc-2e.yaml`. The byte-counted underline
      doesn't arise: an outline has no underlines.
-8. **`Besm2RawMs`**, golden tests.
+8. [done] **`Besm2RawMs`**, golden tests. Byte-identical to the Ada
+   binary on the first successful build, for all five `-2e` fixtures
+   under 9 flag sets (`-m`, `-m -s`, `-m -n`, `-m -s -n`, `-m -D`,
+   `-m -b -i -l -M -p`, `-m -u = -U ~`, `-m -1 -B -w 30`, `-H -t -m`);
+   8 raw ms cases in `golden.cases`, 223 golden files in all, all
+   passing (the 146 from steps 5 to 7 regenerated unchanged). Findings:
+   - **A new fixture, `sections-2e.yaml`**, because none of the others
+     reach part of the section bookkeeping: tables that start with
+     derived values, defects or skills rather than stats, and totals of
+     zero or below (no TOTAL row). Its output matches the Ada binary in
+     every format, and `besm2-rst` too (with `-n`).
+   - **No new departures from `besm2-rst`.** Diffing `./besm2_fmt -n -m`
+     against `besm2-rst -m` shows only those found in step 6: the
+     byte-counted underline, `effective: ""` as `()`, the no-break space
+     before `(effective)`, the sort position of `élan vital`.
+   - Two more quirks kept, added to ADA-DIFFERENCES.md, section 5: the
+     lines between sections are the three-blank indent alone, and one
+     entity's `.TE` runs straight into the next entity's name.
 9. **Error handling** golden tests, `-o`, standard input, several files.
 10. **Makefile parity**: `rst`, `pdf`, `install` (to `$HOME/local/bin`)
     targets matching the Ada `GNUmakefile`; README.
