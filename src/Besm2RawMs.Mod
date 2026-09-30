@@ -133,15 +133,31 @@ BEGIN
   RETURN name
 END ExpandDerivedName;
 
-(* "NAME (TEXT)", or just NAME if TEXT is empty. *)
-PROCEDURE WithParens(name, text: String): String;
+(* "NAME (TEXT)". *)
+PROCEDURE Parens(name, text: String): String;
   VAR b: Buffer;
 BEGIN
-  IF Besm2Str.Length(text^) = 0 THEN RETURN name END;
   Besm2Str.Reset(b);
   Besm2Str.Add(b, name^); Besm2Str.Add(b, " ("); Besm2Str.Add(b, text^); Besm2Str.AddChar(b, ")");
   RETURN Besm2Str.Get(b)
+END Parens;
+
+(* "NAME (TEXT)", or just NAME if TEXT is empty: for details. *)
+PROCEDURE WithParens(name, text: String): String;
+BEGIN
+  IF Besm2Str.Length(text^) = 0 THEN RETURN name END;
+  RETURN Parens(name, text)
 END WithParens;
+
+(* "NAME (A, B)", or just NAME if l has no items.  The test is the
+   number of items, as in the Ada version and besm2-rst.scm, not the
+   joined text: a list of one empty string gives "NAME ()" (PLAN.md,
+   step 12). *)
+PROCEDURE WithList(name: String; l: Besm2Str.List): String;
+BEGIN
+  IF l.n = 0 THEN RETURN name END;
+  RETURN Parens(name, Besm2Str.Join(l, ", "))
+END WithList;
 
 (* ---- ProcessEntity ---- *)
 
@@ -205,7 +221,7 @@ BEGIN
     Row(Tbold("VALUE"), Tbold("DERIVED VALUE"), NIL);
     FOR i := 0 TO e.derived.n - 1 DO
       d := e.derived.items[i](Besm2Entities.Derived);
-      TextRow(d.value, NIL, WithParens(ExpandDerivedName(d.name), Besm2Str.Join(d.alternatives, ", ")))
+      TextRow(d.value, NIL, WithList(ExpandDerivedName(d.name), d.alternatives))
     END;
     Line("")
   END;
@@ -237,7 +253,7 @@ BEGIN
     Row(Tbold("LEVEL"), Tbold("POINTS"), Tbold("SKILL"));
     FOR i := 0 TO e.skills.n - 1 DO
       sk := e.skills.items[i](Besm2Entities.Skill);
-      TextRow(sk.level, Points(sk.points), WithParens(sk.name, Besm2Str.Join(sk.specialisations, ", ")))
+      TextRow(sk.level, Points(sk.points), WithList(sk.name, sk.specialisations))
     END;
     (* Unlike the other subtotals, always shown: besm2-rst.scm's
        process-entity-raw-ms doesn't check *show-subtotals* here, as

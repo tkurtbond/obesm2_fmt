@@ -106,22 +106,38 @@ BEGIN
   RETURN name
 END ExpandDerivedName;
 
-(* "NAME (TEXT)", or just NAME if TEXT is empty. *)
-PROCEDURE WithParens(name, text: String): String;
+(* "NAME (TEXT)". *)
+PROCEDURE Parens(name, text: String): String;
   VAR b: Buffer;
 BEGIN
-  IF Besm2Str.Length(text^) = 0 THEN RETURN name END;
   Besm2Str.Reset(b);
   Besm2Str.Add(b, name^); Besm2Str.Add(b, " ("); Besm2Str.Add(b, text^); Besm2Str.AddChar(b, ")");
   RETURN Besm2Str.Get(b)
+END Parens;
+
+(* "NAME (TEXT)", or just NAME if TEXT is empty: for details. *)
+PROCEDURE WithParens(name, text: String): String;
+BEGIN
+  IF Besm2Str.Length(text^) = 0 THEN RETURN name END;
+  RETURN Parens(name, text)
 END WithParens;
 
+(* "NAME (A, B)", or just NAME if l has no items.  The test is the
+   number of items, as in the Ada version and besm2-rst.scm, not the
+   joined text: a list of one empty string gives "NAME ()" (PLAN.md,
+   step 12). *)
+PROCEDURE WithList(name: String; l: Besm2Str.List): String;
+BEGIN
+  IF l.n = 0 THEN RETURN name END;
+  RETURN Parens(name, Besm2Str.Join(l, ", "))
+END WithList;
+
 PROCEDURE DerivedDescription(d: Besm2Entities.Derived): String;
-BEGIN RETURN WithParens(ExpandDerivedName(d.name), Besm2Str.Join(d.alternatives, ", "))
+BEGIN RETURN WithList(ExpandDerivedName(d.name), d.alternatives)
 END DerivedDescription;
 
 PROCEDURE SkillDescription(s: Besm2Entities.Skill): String;
-BEGIN RETURN WithParens(s.name, Besm2Str.Join(s.specialisations, ", "))
+BEGIN RETURN WithList(s.name, s.specialisations)
 END SkillDescription;
 
 (* ---- ProcessEntity ---- *)

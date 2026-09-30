@@ -644,6 +644,28 @@ Each step ends with its tests passing and PLAN.md updated.
       to 0.32 s), with the same peak memory. A short `perf` profile of
       terse on 2000 entities shows most samples in libfyaml's scanner
       and `malloc`, few in the Oberon code; not investigated further.
+12. [done] **Lists of only empty strings, and empty strings**, found
+    while rewriting this program on Ropes (`~/Repos/RPG/Tools/obesm2_fmt2`,
+    its PLAN.md, step 7). Findings:
+    - **A defect, fixed**: with `alternatives: [""]` or
+      `specialisations: [""]`, a list whose items are all empty, the
+      grid and raw ms formats wrote `Attack Combat Value` where the Ada
+      binary and `besm2-rst` write `Attack Combat Value ()`. They
+      tested whether the joined text was empty (`WithParens`); the Ada
+      version tests whether the list is (`Is_Empty`). `Besm2Grid` and
+      `Besm2RawMs` now use `WithList`, which tests the number of items;
+      `WithParens` is left for details, where the Ada version does test
+      the text. Terse and h-m-m already tested the list. No golden case
+      caught it, since no fixture had such a list.
+    - Two new fixtures, with golden files from the Ada binary in every
+      per-fixture case (356 golden files now; the old ones regenerated
+      unchanged but for the five several-files cases, whose glob now
+      picks up the new fixtures): `empty-items-2e.yaml` for the defect
+      (its grid and raw ms cases failed before the fix), and
+      `empty-strings-2e.yaml`, for `name`, `tagline`, `description` and
+      `size` present but empty, blank-only taglines and details, an
+      empty `effective`, and empty stat names and values, on which this
+      port already matched the Ada binary.
 
 ## Open questions
 
