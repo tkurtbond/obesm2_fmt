@@ -17,10 +17,10 @@ defect is found (AGENTS.md, Conventions).
 ## 1. Defects the Ada version had, now fixed there too
 
 The port was written to avoid these. The Ada version fixed them in
-besm2_fmt `8308c10`, with alibfyaml `3053d06` (1.6, 1.7) and a change
-to Arg_Parser (1.8, and the option messages) not yet committed there
-(step 14). The two programs now behave the same way here, except for
-the wording of some messages (section 3).
+besm2_fmt `8308c10`, with alibfyaml `3053d06` for 1.6 and 1.7, and
+Arg_Parser `e608c8e` for 1.8 and the option messages (step 14). The
+two programs now behave the same way here, except for the wording of
+some messages (section 3).
 
 | # | Ada behaviour before `8308c10` | Both now | Found |
 |---|---|---|---|

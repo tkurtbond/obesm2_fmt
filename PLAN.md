@@ -686,9 +686,9 @@ Each step ends with its tests passing and PLAN.md updated.
     Every defect there is fixed in the Ada version too: besm2_fmt
     `8308c10`, with alibfyaml `3053d06` (a file that can't be opened
     raises `Name_Error`/`Use_Error` with the OS reason; string input
-    can be named) and a change to Arg_Parser not yet committed there
-    (an option's next argument is taken even if it starts with `-`;
-    all its messages go to standard error). The Ada repo gained a test
+    can be named) and Arg_Parser `e608c8e` (an option's next argument
+    is taken even if it starts with `-`; all its messages go to
+    standard error). The Ada repo gained a test
     suite adapted from this one (`test/golden.sh`, `test/cli.sh`, the
     same fixtures and golden files).
     - `make golden` from the fixed Ada binary rewrote all 356 golden
