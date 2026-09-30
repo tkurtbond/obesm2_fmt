@@ -47,13 +47,14 @@ LIBOBJS  := $(LIBMODS:%=$(OBJ)/%.o)
 SUPPOBJS := $(TESTSUPPORT:%=$(OBJ)/%.o)
 TESTBINS := $(TESTS:%=$(OBJ)/%)
 
-# Only building needs the shared modules, so clean doesn't check for them.
-ifneq ($(if $(MAKECMDGOALS),$(filter-out clean,$(MAKECMDGOALS)),all),)
+# Only building needs the shared modules, so the cleaning targets don't
+# check for them.
+ifneq ($(if $(MAKECMDGOALS),$(filter-out clean testclean uninstall,$(MAKECMDGOALS)),all),)
 $(foreach m,ArgParser.Mod Err.Mod,$(if $(wildcard $(addsuffix /$(m),$(subst :, ,$(OBERON_MODULES)))),,$(error $(m) is not in OBERON_MODULES ($(OBERON_MODULES)); run make install in ~/Repos/Oberon/ArgParser)))
 $(if $(wildcard $(OLIBFYAML)/src/Fyaml.Mod),,$(error olibfyaml not found in OLIBFYAML ($(OLIBFYAML))))
 endif
 
-.PHONY: all test golden clean
+.PHONY: all test golden rst pdf install uninstall clean testclean
 
 all: $(PROGRAM)
 
@@ -112,7 +113,64 @@ SCHEME_BESM2_RST ?= besm2-rst
 golden:
 	ADA_BESM2_FMT=$(ADA_BESM2_FMT) SCHEME_BESM2_RST=$(SCHEME_BESM2_RST) test/golden.sh generate
 
-clean:
+# ---- Rendered test output, as in the Ada GNUmakefile ----
+#
+# reST from each -2e fixture, with subtotals (-s): grid tables (the
+# default), terse (-t) and tbl tables in a raw ms block (-m), each also
+# with -n; then a letter-sized PDF of each through pandoc's ms writer
+# and the tkb template.  The Ada GNUmakefile calls its -n variants
+# "-unicode-minus", from besm2-rst, where -n turns the Unicode minus
+# on; in the Ada version and here -n turns it off, so they are
+# "-ascii-minus" here (ADA-DIFFERENCES.md, 1.11).  h-m-m output isn't
+# reST, so pandoc can't render it; neither GNUmakefile builds it.
+RST_DATA := $(wildcard test/data/*-2e.yaml)
+RST_BASES := $(basename $(notdir $(RST_DATA)))
+RST_VARIANTS := % %-terse %-tbl %-ascii-minus %-tbl-ascii-minus
+RST_OUTPUT := $(foreach v,$(RST_VARIANTS),$(patsubst %,$(BUILD)/$(v).gen.rst,$(RST_BASES)))
+PDF_OUTPUT := $(RST_OUTPUT:.gen.rst=.ms.pdf)
+
+rst: $(RST_OUTPUT)
+pdf: $(PDF_OUTPUT)
+
+$(BUILD):
+	mkdir -p $@
+
+$(BUILD)/%.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -s $< >$@
+$(BUILD)/%-terse.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -s -t $< >$@
+$(BUILD)/%-tbl.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -s -m $< >$@
+$(BUILD)/%-ascii-minus.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -s -n $< >$@
+$(BUILD)/%-tbl-ascii-minus.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -s -m -n $< >$@
+
+#MS_COLUMNS = -V twocolumns
+$(BUILD)/%.ms.pdf: $(BUILD)/%.gen.rst
+	pandoc -r rst -w ms --template=tkb $(MS_COLUMNS) -o $@ $<
+
+.PRECIOUS: $(BUILD)/%.gen.rst
+
+# ---- Installation ----
+#
+# To $(PREFIX)/bin, $HOME/local/bin by default as in the Ada version
+# (its besm2_fmt.gpr's Install package), where it replaces an installed
+# Ada besm2_fmt.  DESTDIR is prepended, for staging.
+PREFIX ?= $(HOME)/local
+BINDIR ?= $(PREFIX)/bin
+
+install: $(PROGRAM)
+	install -d $(DESTDIR)$(BINDIR)
+	install -m 755 $(PROGRAM) $(DESTDIR)$(BINDIR)/$(PROGRAM)
+
+uninstall:
+	rm -f $(DESTDIR)$(BINDIR)/$(PROGRAM)
+
+clean: testclean
 	rm -rf $(OBJ) $(PROGRAM)
+
+testclean:
+	rm -rf $(BUILD)
 
 print-%: ; @echo $* = $($*)

@@ -577,8 +577,28 @@ Each step ends with its tests passing and PLAN.md updated.
    - A customizer sequence of five or more items is accepted by both
      (and by `besm2-rst`): the items after the counts-as value are all
      applies-to text.
-10. **Makefile parity**: `rst`, `pdf`, `install` (to `$HOME/local/bin`)
-    targets matching the Ada `GNUmakefile`; README.
+10. [done] **Makefile parity**: `rst`, `pdf`, `install` (to `$HOME/local/bin`)
+    targets matching the Ada `GNUmakefile`; README. Also `uninstall`
+    and `testclean`; `clean` now removes `build/` too. Findings:
+    - `make rst` builds the Ada `GNUmakefile`'s five variants (grid,
+      `-terse`, `-tbl`, and `-n` of grid and tbl, all with `-s`) from
+      `test/data/*-2e.yaml`: 30 files, each identical to the Ada
+      binary's output for the same flags. `make pdf` renders all 30
+      through `pandoc -w ms --template=tkb` without warnings; the tbl
+      tables render.
+    - **The Ada `-unicode-minus` files are misnamed** (ADA-DIFFERENCES.md,
+      1.11): built with `-n`, which turns the Unicode minus *off* in
+      the Ada version. Here they are `-ascii-minus`.
+    - Not ported: the Ada `benchmark`, `benchmark-alibfyaml-liveness`,
+      `pdf-comparison` and `html-comparison` targets, which belong to
+      the Ada repo's own documents and tools (step 11 may add a
+      benchmark).
+    - `install` uses `install(1)` to `$(DESTDIR)$(PREFIX)/bin`, with
+      `PREFIX` defaulting to `$HOME/local` as the Ada `besm2_fmt.gpr`
+      does. That is where the Ada binary is installed now, so it would
+      be replaced; checked only with `DESTDIR` into a scratch directory.
+    - README.md: what the program is, an example checked against the
+      program, usage, exit statuses, building and the documents.
 11. Valgrind pass. Optionally, a benchmark against the Ada binary with
     the Ada repo's `tools/benchmark.sh` inputs.
 

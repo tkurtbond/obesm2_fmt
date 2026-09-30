@@ -28,6 +28,7 @@ defect is found (AGENTS.md, Conventions).
 | 1.8 | **A negative `-w` or `-L` is taken for an option**: `-w -5` gives `Argument Required for option -w`. | `-5` is taken as the value and rejected as out of range. Status 2 in both. | Step 3 |
 | 1.9 | **`-u=` takes the next argument as its value** (`-u= file.yaml` complains that `file.yaml` isn't one character). | `-u=` sets the underliner to `=`, as getopt would. | Step 3 |
 | 1.10 | **A write error is an unhandled exception.** With output to a full device (`-o /dev/full`, or standard output redirected there) the run ends with `raised ADA.IO_EXCEPTIONS.DEVICE_ERROR : No space left on device`, status 1. | `besm2_fmt: error writing output: No space left on device`, status 1, once the run is over. | Step 9 |
+| 1.11 | **The GNUmakefile's `-unicode-minus` files have ASCII minus signs.** `make rst` builds `build/*-unicode-minus.gen.rst` and `*-tbl-unicode-minus.gen.rst` with `-n`, a name and comment carried over from `besm2-rst`, where `-n` turns the Unicode minus on; in the Ada version it turns it off. | The same files are called `*-ascii-minus.gen.rst` and `*-tbl-ascii-minus.gen.rst`, built with `-n` too. | Step 10 |
 
 ## 2. Defects in the Ada version that the port copies
 

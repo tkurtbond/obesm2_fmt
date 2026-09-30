@@ -37,12 +37,18 @@ export PATH=/usr/local/sw/versions/voc/git/bin:$PATH
 make            # obj/ (voc output) and ./besm2_fmt
 make test       # unit tests, test/cli.sh (options, exit statuses), test/golden.sh check
 make golden     # regenerate test/golden/ from the reference programs
-make clean      # rm -rf obj besm2_fmt
+make rst        # build/*.gen.rst from test/data/*-2e.yaml, as the Ada GNUmakefile
+make pdf        # build/*.ms.pdf from those (pandoc, --template=tkb)
+make install    # to $(PREFIX)/bin, default ~/local/bin (DESTDIR for staging)
+make uninstall
+make clean      # rm -rf obj besm2_fmt build
+make testclean  # rm -rf build
 make print-VAR  # show a makefile variable
 ```
 
-Planned, not yet written (PLAN.md, section 9): `make rst pdf install`
-as in the Ada `GNUmakefile`. Update this list as they land.
+- **Don't run `make install` with the default `PREFIX` unless asked**:
+  `~/local/bin/besm2_fmt` is the installed Ada binary, and this
+  replaces it. Check the target with `make install DESTDIR=<scratch>`.
 
 - **Everything is compiled with `-OC`**, as the first voc option,
   because olibfyaml requires it: its `.sym` files and runtime library
