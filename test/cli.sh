@@ -5,9 +5,9 @@
 # unit tests do, and exits 1 if any failed.
 #
 # Statuses follow the Ada version (help 1, command-line mistakes 2, bad
-# input files 0), except where PLAN.md, step 3, records a deliberate
-# difference: -u/-U with more than one character and -w below 25 exit 2
-# here.
+# input files 0, an output file that can't be created or written 1).
+# Before Ada 8308c10 (PLAN.md, step 14), -u/-U with more than one
+# character and -w below 25 exited 2 only here.
 
 prog=${1:-./besm2_fmt}
 data=test/data

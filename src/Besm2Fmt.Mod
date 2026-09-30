@@ -133,8 +133,9 @@ BEGIN
   IF Besm2Config.outputFile # NIL THEN
     e := Besm2Out.ToFile(Besm2Config.outputFile^);
     IF e # 0 THEN
-      (* The Ada version dies here with an unhandled Name_Error, status
-         1; this reports the same OS reason and status. *)
+      (* The Ada version died here with an unhandled Name_Error, status
+         1, until it was fixed to report this, as the port did
+         (ADA-DIFFERENCES.md, 1.5). *)
       Err.String("besm2_fmt: can't create "); Err.String(Besm2Config.outputFile^);
       reason := ErrorText(e); Err.String(": "); Err.String(reason^); Err.Ln;
       Platform.Exit(1)

@@ -13,7 +13,8 @@ port of `besm2-rst.scm` from
 [besm-tools](https://github.com/tkurtbond/besm-tools). For every input
 the Ada version handles, the port's output is byte-for-byte the same
 as the Ada binary's. The golden tests check this. Where they differ
-(mostly Ada crashes and error messages), see
+(now only the wording of some error messages, and one port defect),
+and the Ada defects the port was written to avoid, see
 [ADA-DIFFERENCES.md](ADA-DIFFERENCES.md).
 
 ## Example

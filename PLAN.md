@@ -197,14 +197,17 @@ there against the real Scheme binary:
 
 ## 5. Errors
 
-Ada behaviour to match:
+Ada behaviour to match (as of Ada `8308c10`, step 14; the notes in
+brackets are where the Ada version differed before that):
 
 | Case | Ada | Status |
 |---|---|---|
 | Bad YAML, missing key, malformed number, top level not a sequence, bad customizer | `besm2_fmt: error processing FILE: MESSAGE` on stderr, skip the rest of that file, continue with the next | 0 |
-| A list or item of the wrong shape (`stats: 5`, an entity that isn't a mapping) | Ada: unhandled assertion failure. Port: reported like the row above (step 4) | Ada 1, port 0 |
-| Unknown option, missing option argument, bad `-u`/`-U` | diagnostic on stderr | 2 (Ada: 0 for bad `-u`/`-U`; see step 3) |
+| A list or item of the wrong shape (`stats: 5`, an entity that isn't a mapping) | Reported like the row above, with the node's path (step 4) [Ada: unhandled assertion failure, status 1] | 0 |
+| A file that can't be opened | `besm2_fmt: FILE: REASON`, continue with the next | 0 |
+| Unknown option, missing option argument, bad `-u`/`-U` | diagnostic on stderr | 2 [Ada: 0 for bad `-u`/`-U`; see step 3] |
 | Non-numeric or out-of-range `-w`/`-L` | diagnostic on stderr | 2 |
+| `-o` file can't be created, or output can't be written | `besm2_fmt: can't create PATH: REASON`, `besm2_fmt: error writing output: REASON` | 1 |
 | `-h`/`--help` | usage on stdout | 1 |
 
 In Oberon, `Besm2Entities.Load(node, entity, msg): BOOLEAN` and each
@@ -228,16 +231,17 @@ message to `Err`, flushes `Out`, and calls `Platform.Exit(2)`, since
 ArgParser's own error exit isn't exported. `-h`: the handler calls
 `parser.Usage` and returns FALSE; the main module then exits 1.
 
-`-w` values below 25 make the Ada program fail with "invalid numeric
-option argument" (status 2) as soon as it builds a 3-column row, since
-the wrapped column would have no width (confirmed: `-w 24` fails).
+`-w` values below 25 made the Ada program fail with "invalid numeric
+option argument" (status 2) as soon as it built a 3-column row, since
+the wrapped column would have no width (confirmed: `-w 24` failed).
 The port declares `-w` with range `25 .. MAX(INTEGER)` in
 `MakeIntOption`, so ArgParser rejects it up front with the same
-status 2.
+status 2. The Ada version now does the same (step 14).
 
-Step 3 found that a bad option *value* (`-u xx`, `-w 0`) doesn't give
+Step 3 found that a bad option *value* (`-u xx`, `-w 0`) didn't give
 status 2 in the Ada version, as the table above expected, but status 0
-after carrying on; the port exits 2. See step 3.
+after carrying on; the port exits 2. See step 3. The Ada version now
+exits 2 too (step 14).
 
 ## 6. Command line (`Besm2Cli`)
 
@@ -678,6 +682,32 @@ Each step ends with its tests passing and PLAN.md updated.
     collects garbage more often (672 collections against 255, terse
     on 2,000 entities); on one small file it is
     faster, since it doesn't allocate enough to trigger a collection.
+14. [done] **The Ada version fixed ADA-DIFFERENCES.md's section 1.**
+    Every defect there is fixed in the Ada version too: besm2_fmt
+    `8308c10`, with alibfyaml `3053d06` (a file that can't be opened
+    raises `Name_Error`/`Use_Error` with the OS reason; string input
+    can be named) and a change to Arg_Parser not yet committed there
+    (an option's next argument is taken even if it starts with `-`;
+    all its messages go to standard error). The Ada repo gained a test
+    suite adapted from this one (`test/golden.sh`, `test/cli.sh`, the
+    same fixtures and golden files).
+    - `make golden` from the fixed Ada binary rewrote all 356 golden
+      files unchanged, so the fixes changed no standard output this
+      port is compared on.
+    - `sort-ties` is now an `ada` case, not `scheme`: the Ada sort is
+      stable, and its output is byte-identical to `besm2-rst`'s golden
+      file. A grid case for it was added. No `scheme` cases remain;
+      the mechanism stays in `golden.sh` in case one is needed again.
+    - `test/data/shape-*.yaml` are now golden cases (`ada:stdout`, in
+      the `bad` globs), since the Ada version no longer halts on them:
+      363 golden files. Its messages for them are word for word the
+      port's.
+    - What still differs is only message wording (ADA-DIFFERENCES.md,
+      3.3 to 3.5), and one defect found in the port while comparing:
+      a directory given as a file is silently read as empty
+      (ADA-DIFFERENCES.md, 6.1), since olibfyaml's `Fyaml.Unreadable`
+      checks only that the path opens. The Ada version now reports
+      `Is a directory`. Not fixed yet; the fix belongs in olibfyaml.
 
 ## Open questions
 
@@ -696,6 +726,8 @@ Each step ends with its tests passing and PLAN.md updated.
   Plan: copy Ada's folding exactly, so the output matches; revisit
   only if the Ada behaviour is declared a bug.
 - ~~**Sort stability.**~~ Resolved in step 5: the Ada sort isn't
-  stable, `besm2-rst`'s is, and the port follows `besm2-rst`.
+  stable, `besm2-rst`'s is, and the port follows `besm2-rst`. The Ada
+  sort is stable now too (step 14).
 - ~~**`-o` to an unwritable path**~~: Resolved in step 3. Ada exits 1
   (unhandled `Name_Error`); the port reports the OS reason and exits 1.
+  The Ada version now reports it the same way (step 14).

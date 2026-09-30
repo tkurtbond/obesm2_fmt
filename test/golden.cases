@@ -5,6 +5,7 @@
 #             besm2_fmt, $ADA_BESM2_FMT) or "scheme" (besm2-rst,
 #             $SCHEME_BESM2_RST), used only where the Ada version is
 #             known to be wrong and the port follows besm2-rst.scm
+#             (none at present)
 #   MODE      how the program is run and what is compared, as many as
 #             apply (step 9):
 #               stdout  standard output only; for input errors, whose
@@ -76,9 +77,9 @@ ada    hmm-t-ms   *-2e   -H -t -m
 # from the Ada version's on purpose (PLAN.md, section 5), and
 # test/cli.sh checks them.  What matters here is what is written before
 # the error, and that nothing is written after it.
-ada:stdout      bad        bad-*    -t
-ada:stdout      bad-grid   bad-*
-ada:stdout      bad-m      bad-*    -m
+ada:stdout      bad        @(bad|shape)-*    -t
+ada:stdout      bad-grid   @(bad|shape)-*
+ada:stdout      bad-m      @(bad|shape)-*    -m
 ada             edge       edge-*
 ada             edge-t     edge-*   -t
 ada             edge-H     edge-*   -H
@@ -99,7 +100,7 @@ ada:file        o-grid     composite-2e
 ada:file:all    o-files    *-2e     -m -U ~
 ada:file        o-R        composite-2e   -H -R Root -L 1
 
-# The Ada sort isn't stable: names equal but for case come out in an
-# arbitrary order.  besm2-rst's, like the port's, keeps document order
-# (PLAN.md, step 5).
-scheme t          sort-ties   -t
+# Names equal but for case keep their document order (PLAN.md, step 5).
+# Once a "scheme" case, while the Ada sort wasn't stable (step 14).
+ada    t          sort-ties   -t
+ada    grid       sort-ties

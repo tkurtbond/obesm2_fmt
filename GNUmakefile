@@ -190,10 +190,10 @@ golden:
 # reST from each -2e fixture, with subtotals (-s): grid tables (the
 # default), terse (-t) and tbl tables in a raw ms block (-m), each also
 # with -n; then a letter-sized PDF of each through pandoc's ms writer
-# and the tkb template.  The Ada GNUmakefile calls its -n variants
+# and the tkb template.  The Ada GNUmakefile called its -n variants
 # "-unicode-minus", from besm2-rst, where -n turns the Unicode minus
 # on; in the Ada version and here -n turns it off, so they are
-# "-ascii-minus" here (ADA-DIFFERENCES.md, 1.11).  h-m-m output isn't
+# "-ascii-minus", in both now (ADA-DIFFERENCES.md, 1.11).  h-m-m output isn't
 # reST, so pandoc can't render it; neither GNUmakefile builds it.
 RST_DATA := $(wildcard test/data/*-2e.yaml)
 RST_BASES := $(basename $(notdir $(RST_DATA)))

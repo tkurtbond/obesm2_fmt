@@ -1,6 +1,6 @@
-# Made up: names equal when case is ignored, to see whether the Ada
-# version's sort keeps them in document order, as this port's does
-# (PLAN.md, open questions, "Sort stability").
+# Made up: names equal when case is ignored, which keep their document
+# order, as in besm2-rst.  The Ada version's sort didn't, until it was
+# fixed (PLAN.md, open questions, "Sort stability"; step 14).
 ---
 - name: Ties
   attributes:

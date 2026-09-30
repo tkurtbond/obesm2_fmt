@@ -2,9 +2,9 @@
 
 This lists every known way the Ada `besm2_fmt`
 (`~/Repos/RPG/Tools/besm2_fmt`) behaves differently from this Oberon-2
-port, and every known defect in it, whether or not the port copies it.
-Each entry was confirmed by running the Ada binary; the "Found" column
-names the PLAN.md step with the details.
+port, and every known defect in either, whether or not the other
+copies it. Each entry was confirmed by running both programs; the
+"Found" column names the PLAN.md step with the details.
 
 The Ada binary is this port's reference: its standard output is
 matched byte for byte (see `test/golden.cases`). So everything below is
@@ -14,21 +14,27 @@ copies to keep that match.
 **Keep this up to date**: add an entry whenever a new difference or
 defect is found (AGENTS.md, Conventions).
 
-## 1. Defects in the Ada version that the port fixes
+## 1. Defects the Ada version had, now fixed there too
 
-| # | Ada behaviour | Port behaviour | Found |
+The port was written to avoid these. The Ada version fixed them in
+besm2_fmt `8308c10`, with alibfyaml `3053d06` (1.6, 1.7) and a change
+to Arg_Parser (1.8, and the option messages) not yet committed there
+(step 14). The two programs now behave the same way here, except for
+the wording of some messages (section 3).
+
+| # | Ada behaviour before `8308c10` | Both now | Found |
 |---|---|---|---|
-| 1.1 | **A bad option value is ignored, and the program carries on.** `-u xx`, `-U ab` or `-w 0` prints `Invalid value for option ...`, stops parsing the command line there, then processes the files named before the bad option, or reads standard input if there were none, and exits 0. Its main has a handler that would exit 2 for this, which is never reached. | Error message, exit 2, nothing processed. | Step 3 |
-| 1.2 | **`-w` from 1 to 24 is accepted, then aborts the run.** The first three-column row has no room for its wrapped column: after writing the entity's name and underline, the program stops with the misleading `besm2_fmt: invalid numeric option argument`, status 2, and later files are never processed. | `-w` must be 25 or more; a smaller value is rejected before anything is read, with ArgParser's `Value out of range` error, status 2. | Step 3 |
-| 1.3 | **YAML of the wrong shape crashes the program.** An entity that isn't a mapping, `stats: 5`, `stats:` with no value (null), a list item that isn't a mapping or a scalar, `enhancements: Area`, a customizer of one item (`[Range]`), or an applies-to that is a sequence each end the run with `raised ADA.ASSERTIONS.ASSERTION_ERROR : failed precondition from libfyaml-nodes.ads:NNN`, status 1, without naming the file. Later files are never processed. | Reported like any other bad data, with the node's path (`besm2_fmt: error processing FILE: /0/stats: not a sequence`); the rest of that file is skipped and the run goes on, status 0. | Step 4; step 9 (`stats:`, `test/data/shape-*.yaml`) |
-| 1.4 | **Names equal but for case sort in an arbitrary order** (GNAT's `Generic_Sorting` isn't stable): `armour 1, Armour 2, ARMOUR 3, armour 4` comes out as `ARMOUR 3, armour 1, Armour 2, armour 4`. `besm2-rst` keeps document order. | Document order, as `besm2-rst` (a stable insertion sort). The golden file for `test/data/sort-ties.yaml` comes from `besm2-rst`. | Step 5 |
-| 1.5 | **`-o` to a path that can't be created dies with an unhandled exception**: `raised ADA.IO_EXCEPTIONS.NAME_ERROR : PATH: No such file or directory`, status 1. | `besm2_fmt: can't create PATH: No such file or directory`, status 1. | Step 3 |
-| 1.6 | **A missing or unreadable file is reported as a parse error**: libfyaml's own `[ERR]: failed to open nosuch.yaml`, then `besm2_fmt: error processing nosuch.yaml: document failed to parse`, with no reason given. | `besm2_fmt: nosuch.yaml: error: No such file or directory`. | Step 3; this document |
-| 1.7 | **YAML errors on standard input name the wrong file**: Ada reads standard input into a string first, so libfyaml reports `(string-in-memory):2:1: error: ...`. | `besm2_fmt: <stdin>:2:1: error: flow sequence without a closing bracket`, for input `- [a`. | This document |
-| 1.8 | **A negative `-w` or `-L` is taken for an option**: `-w -5` gives `Argument Required for option -w`. | `-5` is taken as the value and rejected as out of range. Status 2 in both. | Step 3 |
-| 1.9 | **`-u=` takes the next argument as its value** (`-u= file.yaml` complains that `file.yaml` isn't one character). | `-u=` sets the underliner to `=`, as getopt would. | Step 3 |
-| 1.10 | **A write error is an unhandled exception.** With output to a full device (`-o /dev/full`, or standard output redirected there) the run ends with `raised ADA.IO_EXCEPTIONS.DEVICE_ERROR : No space left on device`, status 1. | `besm2_fmt: error writing output: No space left on device`, status 1, once the run is over. | Step 9 |
-| 1.11 | **The GNUmakefile's `-unicode-minus` files have ASCII minus signs.** `make rst` builds `build/*-unicode-minus.gen.rst` and `*-tbl-unicode-minus.gen.rst` with `-n`, a name and comment carried over from `besm2-rst`, where `-n` turns the Unicode minus on; in the Ada version it turns it off. | The same files are called `*-ascii-minus.gen.rst` and `*-tbl-ascii-minus.gen.rst`, built with `-n` too. | Step 10 |
+| 1.1 | **A bad option value was ignored, and the program carried on.** `-u xx`, `-U ab` or `-w 0` printed `Invalid value for option ...`, stopped parsing the command line there, then processed the files named before the bad option, or read standard input if there were none, and exited 0. (Already fixed in the Ada source by Arg_Parser `8528c2a`; the binary was older.) | Error message, exit 2, nothing processed. | Step 3 |
+| 1.2 | **`-w` from 1 to 24 was accepted, then aborted the run.** The first three-column row has no room for its wrapped column: after writing the entity's name and underline, the program stopped with the misleading `besm2_fmt: invalid numeric option argument`, status 2, and later files were never processed. | `-w` must be 25 or more; a smaller value is rejected before anything is read, status 2. | Step 3 |
+| 1.3 | **YAML of the wrong shape crashed the program.** An entity that isn't a mapping, `stats: 5`, `stats:` with no value (null), a list item that isn't a mapping or a scalar, `enhancements: Area`, a customizer of one item (`[Range]`), or an applies-to that is a sequence each ended the run with `raised ADA.ASSERTIONS.ASSERTION_ERROR : failed precondition from libfyaml-nodes.ads:NNN`, status 1, without naming the file. Later files were never processed. | Reported like any other bad data, with the node's path, in the same words (`besm2_fmt: error processing FILE: /0/stats: not a sequence`); the rest of that file is skipped and the run goes on, status 0. Now golden cases (`test/data/shape-*.yaml`). | Step 4; step 9 |
+| 1.4 | **Names equal but for case sorted in an arbitrary order** (GNAT's `Generic_Sorting` isn't stable): `armour 1, Armour 2, ARMOUR 3, armour 4` came out as `ARMOUR 3, armour 1, Armour 2, armour 4`. | Document order, as `besm2-rst` (a stable insertion sort in both). `test/data/sort-ties.yaml`'s golden files now come from the Ada binary, and match what `besm2-rst` gave. | Step 5 |
+| 1.5 | **`-o` to a path that couldn't be created died with an unhandled exception**: `raised ADA.IO_EXCEPTIONS.NAME_ERROR : PATH: No such file or directory`, status 1. | `besm2_fmt: can't create PATH: No such file or directory`, status 1. | Step 3 |
+| 1.6 | **A missing or unreadable file was reported as a parse error**: libfyaml's own `[ERR]: failed to open nosuch.yaml`, then `besm2_fmt: error processing nosuch.yaml: document failed to parse`, with no reason given. | The OS reason (wording differs, 3.4). | Step 3 |
+| 1.7 | **YAML errors on standard input named the wrong file**: `(string-in-memory):2:1: error: ...`. | Named for standard input: `(stdin)` in Ada, `<stdin>` here (3.2). | This document |
+| 1.8 | **A negative `-w` or `-L` was taken for an option**: `-w -5` gave `Argument Required for option -w`. | `-5` is taken as the value and rejected as out of range. Status 2 in both. | Step 3 |
+| 1.9 | **`-u=` took the next argument as its value.** (Already fixed in the Ada source by Arg_Parser `264a098`.) | `-u=` sets the underliner to `=`, as getopt would. | Step 3 |
+| 1.10 | **A write error was an unhandled exception.** With output to a full device (`-o /dev/full`, or standard output redirected there) the run ended with `raised ADA.IO_EXCEPTIONS.DEVICE_ERROR : No space left on device`, status 1. | `besm2_fmt: error writing output: No space left on device`, status 1. Ada stops at the first failed write; the port reports it once the run is over. | Step 9 |
+| 1.11 | **The GNUmakefile's `-unicode-minus` files had ASCII minus signs.** `make rst` built `build/*-unicode-minus.gen.rst` and `*-tbl-unicode-minus.gen.rst` with `-n`, a name and comment carried over from `besm2-rst`, where `-n` turns the Unicode minus on; in the Ada version it turns it off. | Called `*-ascii-minus.gen.rst` and `*-tbl-ascii-minus.gen.rst`, built with `-n`. | Step 10 |
 
 ## 2. Defects in the Ada version that the port copies
 
@@ -49,7 +55,9 @@ compare these.
 |---|---|---|---|
 | 3.1 | Errors from the YAML library: `besm2_fmt: error processing FILE: MESSAGE`, where MESSAGE may itself name the file | `besm2_fmt: ` then olibfyaml's gcc-style message, `FILE:LINE:COLUMN: error: TEXT` | The file was named twice. Errors the port finds itself keep the Ada wording. |
 | 3.2 | Standard input is called `(stdin)` in messages | `<stdin>` | olibfyaml's name, as gcc's. |
-| 3.3 | Usage text in Ada arg_parser's layout | ArgParser's layout (same options, order and descriptions) | Different library. |
+| 3.3 | Usage text and command-line error messages in Ada arg_parser's words (`Invalid value for option -w: "24" is not in range 25..2147483647`), usage not repeated after an error | ArgParser's (`Error: Value out of range for option -w, --width.`, then the usage) | Different library. Same exit statuses. |
+| 3.4 | A file that can't be opened: `besm2_fmt: nosuch.yaml: No such file or directory` | `besm2_fmt: nosuch.yaml: error: No such file or directory` | As 3.1. |
+| 3.5 | Bad data found by the YAML library (a missing key, a bad integer) is reported without a path or position: `error processing FILE: missing required key "points"` | With both: `FILE: error: /1/stats/0: missing required key "points"` | As 3.1; the shape errors the programs find themselves (1.3) read the same in both. |
 
 ## 4. Where the Ada version departs from `besm2-rst`, and the port follows Ada
 
@@ -86,3 +94,9 @@ differences, but they look like bugs:
 - A limiter with a negative counts-as value is written `+-1`.
 - An error in an entity ends the rest of its file, not just that
   entity, and the run's exit status is still 0.
+
+## 6. Defects in the port that the Ada version doesn't have
+
+| # | Port behaviour | Ada behaviour | Found |
+|---|---|---|---|
+| 6.1 | **A directory given as a file is silently taken for an empty file**: nothing is written, no error, status 0. olibfyaml's `Fyaml.Unreadable` only checks that the path opens for reading, which a directory does, and libfyaml then finds no documents in it. Not fixed yet: the fix belongs in olibfyaml. | `besm2_fmt: test: Is a directory`, and the run goes on (alibfyaml `3053d06`). | Step 14 |

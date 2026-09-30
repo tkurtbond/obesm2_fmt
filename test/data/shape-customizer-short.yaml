@@ -1,6 +1,6 @@
 # Made up (PLAN.md, step 9): a customizer sequence with a name and nothing
-# else.  The Ada version halts on an assertion here (ADA-DIFFERENCES.md,
-# 1.3), so this is a test/cli.sh case, not a golden one.
+# else.  The Ada version halted on an assertion here until it was fixed
+# (ADA-DIFFERENCES.md, 1.3); now a golden case too.
 - name: Good
   stats: [{name: Body, value: 4, points: 8}]
 - name: Short

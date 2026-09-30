@@ -99,18 +99,21 @@ make print-VAR  # show a makefile variable
   golden`, and review the new files before committing them.
 - **The Ada binary is the reference.** For every case in
   `test/golden.cases`, output (standard output and error together) must
-  match it byte for byte, with status 0. The one exception so far: where
-  the Ada version is known to be wrong and the port follows
-  `besm2-rst.scm` instead, the case's reference is `scheme`, the real
-  `besm2-rst` (`~/local/bin/besm2-rst`). Those fixtures don't end in
-  `-2e.yaml`, so the Ada cases (`*-2e`) skip them. Currently only the
-  sort of names equal but for case (PLAN.md, step 5).
+  match it byte for byte, with status 0. Where the Ada version is known
+  to be wrong and the port follows `besm2-rst.scm` instead, the case's
+  reference is `scheme`, the real `besm2-rst` (`~/local/bin/besm2-rst`);
+  such fixtures mustn't end in `-2e.yaml`, so the Ada cases (`*-2e`)
+  skip them. There are none now: the one there was, the sort of names
+  equal but for case, became an `ada` case once the Ada version fixed
+  it (PLAN.md, step 14).
+- The Ada binary must be current: `make` in the Ada repo, against the
+  current Arg_Parser and alibfyaml (its GNUmakefile explains
+  `GPR_PROJECT_PATH`). An old binary can differ from the Ada source
+  (PLAN.md, step 14).
 - Error cases, whose messages differ from the Ada version's on purpose
   (PLAN.md, section 5), are golden cases in `ada:stdout` mode: only
   standard output is compared, and `test/cli.sh` checks their exit
-  status and a line of their message. Inputs that crash the Ada version
-  (`test/data/shape-*.yaml`) can't be golden cases; they are `cli.sh`
-  checks only. Several files, standard input and `-o` are golden cases
+  status and a line of their message. Several files, standard input and `-o` are golden cases
   in the `all`, `stdin` and `file` modes (see `test/golden.cases`).
 - **Regenerate golden files with `make golden`; never hand-edit one.**
   If a golden file looks wrong, the bug is in the reference program:
