@@ -266,6 +266,13 @@ BEGIN
     Line("")
   END;
 
+  (* The total row has three columns, so it needs a format of its own
+     when there was no section, or the last was the derived values'
+     two. *)
+  IF ~firstSectionSeen
+     OR (e.derived.n > 0) & (e.attributes.n = 0) & (e.defects.n = 0) & (e.skills.n = 0) THEN
+    StartSection("c c lx .", firstSectionSeen)
+  END;
   TotalRow(SignedPoints(e.entityTotal), "TOTAL");
   Line("=");
   Line(".TE");

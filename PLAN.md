@@ -761,6 +761,14 @@ Each step ends with its tests passing and PLAN.md updated.
     `sections-2e.yaml`'s comment no longer says totals of zero and
     below have no TOTAL row.
 
+17. [done] **Raw ms's TOTAL row gets a format of its own when it
+    needs one**, as in besm-tools 7c32ecd and the Ada version's
+    6bc10a0 (its QUIRKS.md, Status). After derived values (`c l sx`,
+    two columns) tbl discarded the three-entry row, and an entity with
+    no sections had no format line at all. `.T&` and `c c lx .` now
+    come before the row after derived values, and `c c lx .` and `=`
+    when it is the only row. 11 golden files gain those lines.
+
 ## Open questions
 
 - **Where should the `Args` shim live?** This plan keeps it in
