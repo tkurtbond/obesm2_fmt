@@ -34,7 +34,7 @@ either library. Most of what they say about voc applies here too.
 
 ```sh
 export PATH=/usr/local/sw/versions/voc/git/bin:$PATH
-make            # obj/ (voc output) and ./besm2_fmt
+make            # obj/ (voc output) and ./obesm2_fmt
 make test       # unit tests, test/regs.sh, test/cli.sh (options, exit statuses), test/golden.sh check
 make golden     # regenerate test/golden/ from the reference programs
 make valgrind   # the program under valgrind over every fixture and path (about a minute)
@@ -50,8 +50,8 @@ make print-VAR  # show a makefile variable
 ```
 
 - **Don't run `make install` with the default `PREFIX` unless asked**:
-  `~/local/bin/besm2_fmt` is the installed Ada binary, and this
-  replaces it. Check the target with `make install DESTDIR=<scratch>`.
+  it puts `obesm2_fmt` in `~/local/bin`, beside the installed Ada
+  `besm2_fmt`. Check the target with `make install DESTDIR=<scratch>`.
 
 - **Everything is compiled with `-OC`**, as the first voc option,
   because olibfyaml requires it: its `.sym` files and runtime library
@@ -77,7 +77,9 @@ make print-VAR  # show a makefile variable
 - `LDLIBS=$(pkg-config --libs libfyaml)` must be exported for the link
   of the main module; voc reads it from the environment.
 - The main module is `Besm2Fmt` (an Oberon identifier can't contain
-  `_`); the makefile copies `obj/Besm2Fmt` to `./besm2_fmt`.
+  `_`); the makefile copies `obj/Besm2Fmt` to `./obesm2_fmt`, named
+  for this repo so it can be installed beside the Ada `besm2_fmt`.
+  Its messages still say `besm2_fmt`, as the Ada version's do.
 - Link main modules with `-m`, not `-M`: `-M` links fully statically,
   and there is no static `libfyaml`. `libvoc-OC.so` is found at run
   time through the system `ld.so` cache.

@@ -28,7 +28,7 @@
 # NA and the times come from GNU time, at 10 ms resolution.
 #
 # Environment (all optional):
-#   BESM2_FMT        the program to measure       (default ./besm2_fmt)
+#   BESM2_FMT        the program to measure       (default ./obesm2_fmt)
 #   PERF_LABEL       its name in the report       (default: the repo's directory name)
 #   PERF_OUT         where the data goes          (default build/perfdata.tsv)
 #   PERF_DIR         where the inputs are made    (default build/perf)
@@ -42,7 +42,7 @@
 set -euo pipefail
 
 FORMAT_VERSION=1
-prog=${BESM2_FMT:-./besm2_fmt}
+prog=${BESM2_FMT:-./obesm2_fmt}
 label=${PERF_LABEL:-$(basename "$PWD")}
 out=${PERF_OUT:-build/perfdata.tsv}
 dir=${PERF_DIR:-build/perf}

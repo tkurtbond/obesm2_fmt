@@ -11,7 +11,7 @@
 # if they differ.
 #
 # Environment (all optional):
-#   BESM2_FMT       this program             (default ./besm2_fmt)
+#   BESM2_FMT       this program             (default ./obesm2_fmt)
 #   ADA_BESM2_FMT   the Ada program          (default ~/Repos/RPG/Tools/besm2_fmt/besm2_fmt)
 #   BENCH_N         runs for the per-invocation mean   (default 200)
 #   BENCH_ENTITIES  entities in the throughput inputs  (default 2000)
@@ -22,7 +22,7 @@
 
 set -euo pipefail
 
-port=${BESM2_FMT:-./besm2_fmt}
+port=${BESM2_FMT:-./obesm2_fmt}
 ada=${ADA_BESM2_FMT:-$HOME/Repos/RPG/Tools/besm2_fmt/besm2_fmt}
 n=${BENCH_N:-200}
 entities=${BENCH_ENTITIES:-2000}

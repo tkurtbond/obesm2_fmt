@@ -122,7 +122,7 @@ You need:
   `~/Repos/Oberon/olibfyaml`).
 
 ```sh
-make                # ./besm2_fmt
+make                # ./obesm2_fmt
 make test           # unit tests, command-line checks, golden-output tests
 make valgrind       # the program under valgrind, over every fixture
 make benchmark      # time against the Ada binary (a Markdown report)
@@ -134,9 +134,10 @@ make pdf            # build/*.ms.pdf from those, via pandoc and the tkb ms templ
 make clean          # everything built; make testclean removes only build/
 ```
 
-`make install` puts the program in `$HOME/local/bin` by default, the
-same place as the Ada version. Any Ada `besm2_fmt` already there is
-replaced. Set `PREFIX` (and `DESTDIR` for staging) to install
+The program is built as `obesm2_fmt`, so it can be installed beside the
+Ada `besm2_fmt`; its messages and usage still call it `besm2_fmt`, as
+the Ada version's do. `make install` puts it in `$HOME/local/bin` by
+default. Set `PREFIX` (and `DESTDIR` for staging) to install
 elsewhere.
 
 `make golden` regenerates the golden test files from the Ada binary

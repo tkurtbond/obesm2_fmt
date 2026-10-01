@@ -3,5 +3,5 @@
 # rendered test output (reST, PDF, HTML)
 /build/
 # the program, copied from obj/Besm2Fmt
-/besm2_fmt
+/obesm2_fmt
 .~/

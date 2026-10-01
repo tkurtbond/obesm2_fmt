@@ -46,7 +46,7 @@ vpath %.Mod rtl src test $(subst :, ,$(OBERON_MODULES)) $(OLIBFYAML)/src
 OBJ   := obj
 BUILD := build
 
-PROGRAM := besm2_fmt
+PROGRAM := obesm2_fmt
 MAIN    := Besm2Fmt
 
 # Library modules, in import order.  Args is rtl/Args.Mod, standing in

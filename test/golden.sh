@@ -2,7 +2,7 @@
 # Golden-output tests (PLAN.md, section 8).  Run from the repo root.
 #
 #   test/golden.sh check [PROGRAM]   compare PROGRAM's output (default
-#                                    ./besm2_fmt) with test/golden/
+#                                    ./obesm2_fmt) with test/golden/
 #   test/golden.sh generate          rewrite test/golden/ from the
 #                                    reference programs
 #
@@ -16,7 +16,7 @@
 
 set -u
 mode=${1:-check}
-prog=${2:-./besm2_fmt}
+prog=${2:-./obesm2_fmt}
 ada=${ADA_BESM2_FMT:-$HOME/Repos/RPG/Tools/besm2_fmt/besm2_fmt}
 scheme=${SCHEME_BESM2_RST:-besm2-rst}
 cases=test/golden.cases
