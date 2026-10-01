@@ -186,7 +186,7 @@ there against the real Scheme binary:
 - Terse/h-m-m: `Label_Points` suffixes `CP`/`BP`/`MP`/`MBP`; the
   Statistics subtotal has a trailing space the others don't; defect
   details are followed by `".  "` (two spaces) but attribute details by
-  `". "`.
+  `". "`. (Both fixed in step 18.)
 - h-m-m: indentation starts from `-L` for every entity; `-S` puts items
   on separate lines; newlines in tagline, description and details become
   spaces; only name and level are emphasized in skills (besm-tools
@@ -768,6 +768,16 @@ Each step ends with its tests passing and PLAN.md updated.
     no sections had no format line at all. `.T&` and `c c lx .` now
     come before the row after derived values, and `c c lx .` and `=`
     when it is the only row. 11 golden files gain those lines.
+
+18. [done] **One space after details, none after the Statistics
+    subtotal or the h-m-m description**, in terse and h-m-m, as in
+    besm-tools and the Ada version (ADA-DIFFERENCES 5.1, 8 to 10; 5.2
+    no longer lists 8 and 9). Defect details and skill specialisations
+    were followed by two spaces and attribute details by one; all now
+    have one. The Statistics subtotal had a space after it that the
+    other subtotals don't, and the h-m-m description line ended with a
+    blank. The golden files change in spaces only (`git diff -w` shows
+    nothing).
 
 ## Open questions
 

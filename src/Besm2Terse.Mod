@@ -83,15 +83,13 @@ BEGIN
   RETURN Besm2Str.Get(b)
 END Attribute;
 
-(* Defect details are followed by two blanks, attribute details by one:
-   as in besm2-rst.scm. *)
 PROCEDURE Defect(d: Besm2Entities.Defect; mecha: BOOLEAN): String;
   VAR b: Buffer;
 BEGIN
   Besm2Str.Reset(b);
   AddEmphasized(b, d.name^);
   Besm2Str.Add(b, " (");
-  IF Besm2Str.Length(d.details^) > 0 THEN Besm2Str.Add(b, d.details^); Besm2Str.Add(b, ".  ") END;
+  IF Besm2Str.Length(d.details^) > 0 THEN Besm2Str.Add(b, d.details^); Besm2Str.Add(b, ". ") END;
   AddLabelPoints(b, d.points, mecha); Besm2Str.AddChar(b, ")");
   RETURN Besm2Str.Get(b)
 END Defect;
@@ -103,7 +101,7 @@ BEGIN
   e := NameAndLevel(s.name, s.level); AddEmphasized(b, e^);
   Besm2Str.Add(b, " (");
   IF s.specialisations.n > 0 THEN
-    e := Besm2Str.Join(s.specialisations, ", "); Besm2Str.Add(b, e^); Besm2Str.Add(b, ".  ")
+    e := Besm2Str.Join(s.specialisations, ", "); Besm2Str.Add(b, e^); Besm2Str.Add(b, ". ")
   END;
   Besm2Str.AddInt(b, s.points); Besm2Str.Add(b, " SP)");
   RETURN Besm2Str.Get(b)
@@ -180,8 +178,7 @@ BEGIN
 
   IF e.stats.n > 0 THEN
     Besm2Out.Str(Besm2Layout.Bold("Statistics"));
-    (* This subtotal alone has a trailing blank, in besm2-rst.scm too. *)
-    IF Besm2Config.showSubtotals THEN Subtotal(e.statsTotal, e.mecha); Besm2Out.Char(" ") END;
+    Subtotal(e.statsTotal, e.mecha);
     Besm2Out.String(" — "); Besm2Out.Ln;
     Items(e.stats, e.mecha)
   END;

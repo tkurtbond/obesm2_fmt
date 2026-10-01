@@ -114,14 +114,12 @@ BEGIN
   RETURN Besm2Str.Get(b)
 END Attribute;
 
-(* Two blanks after defect details, one after attribute details, as in
-   terse. *)
 PROCEDURE Defect(d: Besm2Entities.Defect; mecha: BOOLEAN): String;
   VAR b: Buffer; e: String;
 BEGIN
   Besm2Str.Reset(b);
   e := Besm2Layout.Emphasizing(d.name^); Besm2Str.Add(b, e^);
-  Besm2Str.Add(b, " ("); AddDetails(b, d.details, ".  ");
+  Besm2Str.Add(b, " ("); AddDetails(b, d.details, ". ");
   AddLabelPoints(b, d.points, mecha); Besm2Str.AddChar(b, ")");
   RETURN Besm2Str.Get(b)
 END Defect;
@@ -133,7 +131,7 @@ BEGIN
   AddNameAndLevel(b, s.name, s.level);
   Besm2Str.Add(b, " (");
   IF s.specialisations.n > 0 THEN
-    specs := Besm2Str.Join(s.specialisations, ", "); Besm2Str.Add(b, specs^); Besm2Str.Add(b, ".  ")
+    specs := Besm2Str.Join(s.specialisations, ", "); Besm2Str.Add(b, specs^); Besm2Str.Add(b, ". ")
   END;
   Besm2Str.AddInt(b, s.points); Besm2Str.Add(b, " SP)");
   RETURN Besm2Str.Get(b)
@@ -202,8 +200,7 @@ BEGIN
   END;
 
   IF ~Besm2Config.omitEntityDescription & (e.description # NIL) THEN
-    (* With a trailing blank, as in besm2-rst.scm. *)
-    Indent(d2); Besm2Out.Str(AllOneLine(e.description^)); Besm2Out.Char(" "); Besm2Out.Ln
+    Indent(d2); Besm2Out.Str(AllOneLine(e.description^)); Besm2Out.Ln
   END;
 
   IF e.size # NIL THEN
@@ -213,8 +210,7 @@ BEGIN
 
   IF e.stats.n > 0 THEN
     Heading(d2, "Statistics");
-    (* This subtotal alone has a trailing blank, as in terse. *)
-    IF Besm2Config.showSubtotals THEN Subtotal(e.statsTotal, e.mecha); Besm2Out.Char(" ") END;
+    Subtotal(e.statsTotal, e.mecha);
     Besm2Out.Ln;
     Items(e.stats, e.mecha, d3)
   END;

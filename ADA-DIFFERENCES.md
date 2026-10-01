@@ -106,14 +106,25 @@ this port and its Ropes rewrite (besm2_fmt's QUIRKS.md; besm-tools
 6. In raw ms the grand total was shown only when positive; now it is
    always shown, as in grid.
 
+Fixed later, the same way in all four:
+
+7. In raw ms the TOTAL row had no format of its own, so tbl dropped it
+   after derived values (two columns), and an entity with no sections
+   had no format line at all. (Step 17.)
+8. In terse and h-m-m, the Statistics subtotal was followed by a space
+   that the other subtotals don't have: two spaces before the dash in
+   terse, a trailing blank in h-m-m. (Step 18.)
+9. In terse and h-m-m, defect details and skill specialisations were
+   followed by `".  "` (two spaces) before the points, attribute
+   details by `". "`; now all three have one space. (Step 18.)
+10. In h-m-m, the description line ended with a trailing blank; now it
+    doesn't. (Step 18.)
+
 ### 5.2 Kept on purpose
 
 Faithful to `besm2-rst.scm` in every program, so not differences, but
 they look like bugs:
 
-- In terse and h-m-m, the Statistics subtotal is followed by a space
-  that the other subtotals don't have; defect details are followed by
-  two spaces, attribute details by one.
 - In grid and raw ms, the skill points total is always shown, the
   other subtotals only under `-s`.
 - In raw ms, each line between sections is the three-blank indent
