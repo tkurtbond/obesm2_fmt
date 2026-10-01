@@ -28,7 +28,9 @@ failed=0 count=0
 [ "$mode" = generate ] && mkdir -p "$golden"
 
 # run PROGRAM OUT FILES...: run PROGRAM as case $refmodes says, with
-# $flags, writing what is compared to OUT; return its exit status.
+# $flags, writing what is compared to OUT, then a "==== exit 1 ===="
+# line if it exited 1 (an input error, reported); return its exit
+# status.
 run() {
   local p=$1 o=$2 st; shift 2
   local in=/dev/null
@@ -46,6 +48,7 @@ run() {
     # shellcheck disable=SC2086
     "$p" $flags "$@" >"$o" 2>&1 <"$in"; st=$?
   fi
+  [ $st -eq 1 ] && echo "==== exit 1 ====" >>"$o"
   return $st
 }
 
@@ -55,7 +58,7 @@ compare() {
   local label=$1
   if [ ! -e "$out" ]; then
     echo "FAIL - $label: no golden file (make golden)"; failed=$((failed + 1))
-  elif [ $status -ne 0 ]; then
+  elif [ $status -gt 1 ]; then
     echo "FAIL - $label ($flags): exit $status"; failed=$((failed + 1))
   elif ! cmp -s "$out" "$tmp/out"; then
     echo "FAIL - $label ($flags)"; diff "$out" "$tmp/out" | head -20 | sed 's/^/    /'
@@ -94,7 +97,7 @@ while read -r ref id pattern flags; do
     count=$((count + 1))
     if [ "$mode" = generate ]; then
       run "$refprog" "$out" "${files[@]}"; status=$?
-      if [ $status -ne 0 ]; then
+      if [ $status -gt 1 ]; then
         echo "golden.sh: $refprog $flags ${files[*]} ($ref) exited $status" >&2; exit 2
       fi
     else

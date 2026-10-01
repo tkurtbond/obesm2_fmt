@@ -145,9 +145,7 @@ Confirmed in olibfyaml or ArgParser unless noted.
 - **Function procedures can't return arrays or records**: strings are
   `POINTER TO ARRAY OF CHAR`, 0X-terminated.
 - **`Out` can't be redirected**, unlike Ada's `Set_Output`. All program
-  output goes through `Besm2Out` so `-o` can send it to a file. The one
-  exception, the `-R`/`--hmm-root` line, goes to standard output even
-  under `-o`, as in the Ada version.
+  output goes through `Besm2Out` so `-o` can send it to a file.
 - **`Out` buffers until `Out.Ln`/`Out.Flush`, and `Platform.Exit`
   doesn't flush it.** Flush before exiting.
 - **Argument evaluation order is unspecified** (voc compiles to C). Don't

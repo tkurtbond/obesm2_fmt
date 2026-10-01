@@ -25,7 +25,8 @@
 #   FLAGS     the command-line options, before the fixtures' paths
 # Blank lines and lines starting with # are ignored.  Golden files hold
 # standard output and standard error together unless the mode says
-# otherwise; every case must exit 0.
+# otherwise.  A case that exits 1 (bad input, reported) ends its golden
+# file with a "==== exit 1 ====" line; any other status but 0 fails.
 
 # ---- terse (step 5) ----
 ada    t          *-2e   -t
@@ -75,8 +76,9 @@ ada    hmm-t-ms   *-2e   -H -t -m
 # ---- input errors, several files, standard input, -o (step 9) ----
 # Only standard output is compared for bad input: the messages differ
 # from the Ada version's on purpose (PLAN.md, section 5), and
-# test/cli.sh checks them.  What matters here is what is written before
-# the error, and that nothing is written after it.
+# test/cli.sh checks them.  What matters here is that a bad entity
+# writes nothing, that the entities around it are written, and that a
+# YAML error ends its file.
 ada:stdout      bad        @(bad|shape)-*    -t
 ada:stdout      bad-grid   @(bad|shape)-*
 ada:stdout      bad-m      @(bad|shape)-*    -m

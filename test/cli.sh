@@ -4,8 +4,8 @@
 # `make test`, as test/cli.sh [program]; prints ok/FAIL per case, as the
 # unit tests do, and exits 1 if any failed.
 #
-# Statuses follow the Ada version (help 1, command-line mistakes 2, bad
-# input files 0, an output file that can't be created or written 1).
+# Statuses follow the Ada version (help 0, command-line mistakes 2, bad
+# input 1, an output file that can't be created or written 1).
 # Before Ada 8308c10 (PLAN.md, step 14), -u/-U with more than one
 # character and -w below 25 exited 2 only here.
 
@@ -33,8 +33,14 @@ check() {
 
 f=$data/enyon-boase-2e.yaml
 
-check "-h shows the usage and exits 1" 1 '^  -w <arg>, --width <arg>$' -h
-check "--help after a file still exits 1" 1 '^besm2_fmt \[options\] \[files\.\.\.\]$' "$f" --help
+check "-h shows the usage and exits 0" 0 '^  -w <arg>, --width <arg>$' -h
+check "--help after a file still exits 0" 0 '^besm2_fmt \[options\] \[files\.\.\.\]$' "$f" --help
+"$prog" -h </dev/null >"$tmp/out" 2>"$tmp/err"
+if [ -s "$tmp/out" ] && [ ! -s "$tmp/err" ]; then
+  echo "ok   - -h writes the usage to standard output"
+else
+  echo "FAIL - -h writes the usage to standard output"; failed=$((failed + 1))
+fi
 check "an unknown long option exits 2" 2 '^Error: Unknown option --bogus$' --bogus "$f"
 check "an unknown short option exits 2" 2 '^Error: Unknown option -x$' -x "$f"
 check "a missing option argument exits 2" 2 '^Error: Argument required for option -u, --underliner$' -u
@@ -50,10 +56,10 @@ check "-L -1 exits 2" 2 'Value out of range for option -L, --hmm-depth' -L -1 "$
 check "-L that isn't a number exits 2" 2 'Invalid integer value for option -L' -L x "$f"
 check "-o to a directory that doesn't exist exits 1 with the OS reason" 1 \
   '^besm2_fmt: can.t create /nonexistent/dir/out: No such file or directory$' -o /nonexistent/dir/out "$f"
-check "a missing file is reported and the run goes on, exit 0" 0 \
+check "a missing file is reported and the run goes on, exit 1" 1 \
   '^besm2_fmt: nosuch\.yaml: error: No such file or directory$' "$f" nosuch.yaml "$f"
-check "-- ends the options" 0 '^besm2_fmt: -t: error: No such file or directory$' -- -t
-check "a directory is reported, not read as an empty file" 0 \
+check "-- ends the options" 1 '^besm2_fmt: -t: error: No such file or directory$' -- -t
+check "a directory is reported, not read as an empty file" 1 \
   '^besm2_fmt: test/data: error: Is a directory$' test/data "$f"
 # A pipe given as a path (/dev/fd/N) must lose nothing to the check
 # that the file can be opened: libfyaml opens it again.
@@ -63,38 +69,46 @@ else
   echo "FAIL - a pipe given as a path is read whole"; failed=$((failed + 1))
 fi
 
-# A bad entity is reported, writes nothing, and ends its file; entities
-# before it are written, and the run goes on with the next file.  Its
-# number counts on across the documents of a file.
-printf -- '- name: Good\n- name: Bad\n  stats: [{name: B}]\n- name: Never\n' >"$tmp/bad.yaml"
+# A bad entity is reported and writes nothing; the entities before and
+# after it are written, the run goes on with the next file, and the
+# status is 1.
+printf -- '- name: Good\n- name: Bad\n  stats: [{name: B}]\n- name: After\n' >"$tmp/bad.yaml"
 "$prog" "$tmp/bad.yaml" "$data/composite-multi-doc-2e.yaml" >"$tmp/out" 2>&1
 status=$?
-if [ $status -eq 0 ] && grep -q 'Good' "$tmp/out" && ! grep -q 'Bad\|Never' "$tmp/out" \
+if [ $status -eq 1 ] && grep -q 'Good' "$tmp/out" && ! grep -q 'Bad' "$tmp/out" \
+   && grep -q '^After$' "$tmp/out" \
    && grep -q 'bad.yaml: error: /1/stats/0: missing required key "value"' "$tmp/out" \
    && grep -q 'Coleopteran' "$tmp/out"; then
-  echo "ok   - a bad entity ends its file, not the run, with status 0"
+  echo "ok   - a bad entity is skipped, not its file or the run, with status 1"
 else
-  echo "FAIL - a bad entity ends its file, not the run, with status 0"; sed 's/^/    /' "$tmp/out"; failed=$((failed + 1))
+  echo "FAIL - a bad entity is skipped, not its file or the run, with status 1"; sed 's/^/    /' "$tmp/out"; failed=$((failed + 1))
+fi
+# With -U, the entity after a bad first one is the file's first.
+printf -- '- name: Bad\n  stats: [{name: B}]\n- name: After\n' >"$tmp/bad.yaml"
+if "$prog" -U '~' "$tmp/bad.yaml" 2>/dev/null | grep -q '^-----$'; then
+  echo "ok   - a bad entity isn't counted"
+else
+  echo "FAIL - a bad entity isn't counted"; failed=$((failed + 1))
 fi
 printf -- '- 5\n' >"$tmp/shape.yaml"
-check "YAML of the wrong shape is an input error, not a halt" 0 \
+check "YAML of the wrong shape is an input error, not a halt" 1 \
   'error processing .*shape\.yaml: /0: not a mapping$' "$tmp/shape.yaml"
-check "a customizer of one item is an input error, not a halt" 0 \
+check "a customizer of one item is an input error, not a halt" 1 \
   'error processing .*shape-customizer-short\.yaml: /1/attributes/0/enhancements/0: customizer sequence too short$' \
   "$data/shape-customizer-short.yaml"
-check "stats: with no value is an input error, not a halt" 0 \
+check "stats: with no value is an input error, not a halt" 1 \
   'error processing .*shape-null-stats\.yaml: /1/stats: not a sequence$' "$data/shape-null-stats.yaml"
-check "YAML that doesn't parse is reported gcc style" 0 \
+check "YAML that doesn't parse is reported gcc style" 1 \
   '^besm2_fmt: .*bad-yaml\.yaml:6:1: error: missing comma in flow mapping$' "$data/bad-yaml.yaml"
-check "a bad integer is reported with its position and path" 0 \
+check "a bad integer is reported with its position and path" 1 \
   '^besm2_fmt: .*bad-int\.yaml:5:42: error: /1/stats/0/points: not a valid integer: "lots"$' "$data/bad-int.yaml"
-check "a missing key is reported with its path" 0 \
+check "a missing key is reported with its path" 1 \
   '^besm2_fmt: .*bad-missing-key\.yaml: error: /1/stats/0: missing required key "points"$' "$data/bad-missing-key.yaml"
-check "a bad customizer is reported in the Ada wording, with its path" 0 \
+check "a bad customizer is reported in the Ada wording, with its path" 1 \
   'error processing .*bad-customizer-map\.yaml: /1/attributes/0/limiters/0: do not understand customizer$' \
   "$data/bad-customizer-map.yaml"
 check "a file with no documents is not an error" 0 '' "$data/edge-empty.yaml"
-check "an empty document is an error" 0 \
+check "an empty document is an error" 1 \
   'expected a top-level YAML sequence of entities in .*bad-empty-doc\.yaml$' "$data/bad-empty-doc.yaml"
 check "-o to /dev/full exits 1 with the OS reason" 1 \
   '^besm2_fmt: error writing output: No space left on device$' -o /dev/full "$f"
@@ -111,17 +125,15 @@ else
   echo "FAIL - errors in standard input name it <stdin>"; sed 's/^/    /' "$tmp/err"; failed=$((failed + 1))
 fi
 printf -- 'a: 1\n' >"$tmp/map.yaml"
-check "a top level that isn't a sequence is reported" 0 \
+check "a top level that isn't a sequence is reported" 1 \
   'expected a top-level YAML sequence of entities in .*map\.yaml$' "$tmp/map.yaml"
 
-# -R/--hmm-root goes to standard output even under -o, as in the Ada
-# version and besm2-rst.scm; everything else goes to the file.
+# -R/--hmm-root goes into the file under -o, first, with the rest.
 "$prog" -H -R Root -L 2 -o "$tmp/file" "$f" >"$tmp/stdout" 2>&1
-if [ "$(cat "$tmp/stdout")" = "$(printf '\t\tRoot')" ] && [ -s "$tmp/file" ] \
-   && ! grep -q Root "$tmp/file"; then
-  echo "ok   - -R goes to standard output under -o, the rest to the file"
+if [ ! -s "$tmp/stdout" ] && [ "$(head -1 "$tmp/file")" = "$(printf '\t\tRoot')" ]; then
+  echo "ok   - -R goes into the -o file, with the rest"
 else
-  echo "FAIL - -R goes to standard output under -o, the rest to the file"; failed=$((failed + 1))
+  echo "FAIL - -R goes into the -o file, with the rest"; failed=$((failed + 1))
 fi
 
 # With no file names, standard input is read.
