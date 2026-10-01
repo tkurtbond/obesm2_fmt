@@ -195,9 +195,14 @@ golden:
 # on; in the Ada version and here -n turns it off, so they are
 # "-ascii-minus", in both now (ADA-DIFFERENCES.md, 1.11).  h-m-m output
 # isn't reST, so pandoc can't render it; make hmm, below, builds it.
+# Each variant is also built without -s, with "-nosubtotals" appended,
+# so the output with and without the subtotals (and the skill points
+# total) can be compared side by side.
 RST_DATA := $(wildcard test/data/*-2e.yaml)
 RST_BASES := $(basename $(notdir $(RST_DATA)))
-RST_VARIANTS := % %-terse %-tbl %-ascii-minus %-tbl-ascii-minus
+RST_VARIANTS := % %-terse %-tbl %-ascii-minus %-tbl-ascii-minus \
+	%-nosubtotals %-terse-nosubtotals %-tbl-nosubtotals \
+	%-ascii-minus-nosubtotals %-tbl-ascii-minus-nosubtotals
 RST_OUTPUT := $(foreach v,$(RST_VARIANTS),$(patsubst %,$(BUILD)/$(v).gen.rst,$(RST_BASES)))
 PDF_OUTPUT := $(RST_OUTPUT:.gen.rst=.ms.pdf)
 
@@ -217,6 +222,16 @@ $(BUILD)/%-ascii-minus.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
 	./$(PROGRAM) -s -n $< >$@
 $(BUILD)/%-tbl-ascii-minus.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
 	./$(PROGRAM) -s -m -n $< >$@
+$(BUILD)/%-nosubtotals.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) $< >$@
+$(BUILD)/%-terse-nosubtotals.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -t $< >$@
+$(BUILD)/%-tbl-nosubtotals.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -m $< >$@
+$(BUILD)/%-ascii-minus-nosubtotals.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -n $< >$@
+$(BUILD)/%-tbl-ascii-minus-nosubtotals.gen.rst: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -m -n $< >$@
 
 #MS_COLUMNS = -V twocolumns
 $(BUILD)/%.ms.pdf: $(BUILD)/%.gen.rst
