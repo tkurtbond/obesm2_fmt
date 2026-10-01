@@ -70,7 +70,7 @@ $(foreach m,ArgParser.Mod Err.Mod,$(if $(wildcard $(addsuffix /$(m),$(subst :, ,
 $(if $(wildcard $(OLIBFYAML)/src/Fyaml.Mod),,$(error olibfyaml not found in OLIBFYAML ($(OLIBFYAML))))
 endif
 
-.PHONY: all test golden valgrind benchmark perfdata rst pdf install uninstall clean testclean
+.PHONY: all test golden valgrind benchmark perfdata rst pdf hmm install uninstall clean testclean
 
 all: $(PROGRAM)
 
@@ -193,8 +193,8 @@ golden:
 # and the tkb template.  The Ada GNUmakefile called its -n variants
 # "-unicode-minus", from besm2-rst, where -n turns the Unicode minus
 # on; in the Ada version and here -n turns it off, so they are
-# "-ascii-minus", in both now (ADA-DIFFERENCES.md, 1.11).  h-m-m output isn't
-# reST, so pandoc can't render it; neither GNUmakefile builds it.
+# "-ascii-minus", in both now (ADA-DIFFERENCES.md, 1.11).  h-m-m output
+# isn't reST, so pandoc can't render it; make hmm, below, builds it.
 RST_DATA := $(wildcard test/data/*-2e.yaml)
 RST_BASES := $(basename $(notdir $(RST_DATA)))
 RST_VARIANTS := % %-terse %-tbl %-ascii-minus %-tbl-ascii-minus
@@ -224,10 +224,24 @@ $(BUILD)/%.ms.pdf: $(BUILD)/%.gen.rst
 
 .PRECIOUS: $(BUILD)/%.gen.rst
 
+# h-m-m outlines from the same fixtures, with subtotals (-s), as make
+# rst's: items in their entity's node (-H), and as separate nodes (-S).
+# No PDF (it isn't reST), and no -n variant (h-m-m writes no minus
+# sign: defect points are "N BP").
+HMM_VARIANTS := % %-separate
+HMM_OUTPUT := $(foreach v,$(HMM_VARIANTS),$(patsubst %,$(BUILD)/$(v).gen.hmm,$(RST_BASES)))
+
+hmm: $(HMM_OUTPUT)
+
+$(BUILD)/%.gen.hmm: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -s -H $< >$@
+$(BUILD)/%-separate.gen.hmm: test/data/%.yaml $(PROGRAM) | $(BUILD)
+	./$(PROGRAM) -s -H -S $< >$@
+
 # ---- Installation ----
 #
 # To $(PREFIX)/bin, $HOME/local/bin by default as in the Ada version
-# (its besm2_fmt.gpr's Install package), where it replaces an installed
+# (its besm2_fmt.gpr's Install package), under its own name, beside the
 # Ada besm2_fmt.  DESTDIR is prepended, for staging.
 PREFIX ?= $(HOME)/local
 BINDIR ?= $(PREFIX)/bin

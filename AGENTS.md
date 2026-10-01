@@ -41,6 +41,7 @@ make valgrind   # the program under valgrind over every fixture and path (about 
 make benchmark  # timing against the Ada binary: make -s benchmark >PERFORMANCE-COMPARISON.md
 make perfdata   # measure this program alone: build/perfdata.tsv, for obesm2_fmt2's make perfcompare
 make rst        # build/*.gen.rst from test/data/*-2e.yaml, as the Ada GNUmakefile
+make hmm        # build/*.gen.hmm, h-m-m outlines from the same fixtures
 make pdf        # build/*.ms.pdf from those (pandoc, --template=tkb)
 make install    # to $(PREFIX)/bin, default ~/local/bin (DESTDIR for staging)
 make uninstall

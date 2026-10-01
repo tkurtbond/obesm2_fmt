@@ -130,6 +130,7 @@ make perfdata       # measure this program alone (build/perfdata.tsv), for obesm
 make install        # to $(PREFIX)/bin, default ~/local/bin
 make uninstall
 make rst            # build/*.gen.rst from the test fixtures
+make hmm            # build/*.gen.hmm, h-m-m outlines from the same fixtures
 make pdf            # build/*.ms.pdf from those, via pandoc and the tkb ms template
 make clean          # everything built; make testclean removes only build/
 ```
