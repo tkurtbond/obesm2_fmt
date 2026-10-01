@@ -126,14 +126,15 @@ Fixed later, the same way in all four:
     alone (trailing blanks); now it is empty. It is still needed: tbl
     makes it an empty row, the gap between sections. pandoc's ms and
     docutils' output are the same either way. (Step 20.)
+13. A customizer's counts-as of 0 or less was written after the sign
+    its type gives, so a limiter of −1 came out `+-1` and an
+    enhancement of −1 `−-1`. Now it is an input error, "counts-as must
+    be positive", reported with the number's path, and the entity is
+    skipped. (Step 21.)
 
 ### 5.2 Kept on purpose
 
-Faithful to `besm2-rst.scm` in every program, so not differences, but
-they look like bugs:
-
-- A limiter with a negative counts-as value is written `+-1`. (No real
-  data file has one.)
+None now: everything that was listed here is fixed (5.1, 8 to 13).
 
 ## 6. Defects the port had, fixed
 

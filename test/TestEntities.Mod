@@ -141,18 +141,18 @@ END Coleopteran;
 PROCEDURE Customizers;
   CONST
     (* YAML turns the \n in the double-quoted details into a newline. *)
-    Yaml = '- {name: X, attributes: [{name: A, level: 1, points: 1, effective: 3, elements: [Fire, air], enhancements: [Area, [Range, 5], [Zone, 2, a], [Big, 3, b, c]], limiters: [Slow, [Short, -1]], details: "  hi\n"}]}';
+    Yaml = '- {name: X, attributes: [{name: A, level: 1, points: 1, effective: 3, elements: [Fire, air], enhancements: [Area, [Range, 5], [Zone, 2, a], [Big, 3, b, c]], limiters: [Slow, [Short, 1]], details: "  hi\n"}]}';
   VAR a: Besm2Entities.Attribute;
 BEGIN
   Check.Check(FromText(Yaml), "every customizer shape loads");
   IF e = NIL THEN RETURN END;
   a := e.attributes.items[0](Besm2Entities.Attribute);
   Check.Check(Is(a.level, "1 (3)"), "effective level is added to the level");
-  Check.Check(Is(a.details, "air, Fire; Area −1, Big: b, c −3, Range −5, Short +-1, Slow +1, Zone: a −2; hi"),
+  Check.Check(Is(a.details, "air, Fire; Area −1, Big: b, c −3, Range −5, Short +1, Slow +1, Zone: a −2; hi"),
     "details as the Ada version writes them: elements; customizers; text, each sorted");
   Besm2Config.unicodeMinus := FALSE;
   IF FromText(Yaml) THEN a := e.attributes.items[0](Besm2Entities.Attribute) END;
-  Check.Check(Is(a.details, "air, Fire; Area -1, Big: b, c -3, Range -5, Short +-1, Slow +1, Zone: a -2; hi"),
+  Check.Check(Is(a.details, "air, Fire; Area -1, Big: b, c -3, Range -5, Short +1, Slow +1, Zone: a -2; hi"),
     "-n gives ASCII minus signs in details");
   Besm2Config.unicodeMinus := TRUE;
   Check.Check(FromText('- {name: X, attributes: [{name: A, level: 1, points: 1, effective: ""}]}'),

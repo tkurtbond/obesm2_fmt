@@ -253,6 +253,10 @@ BEGIN
       a := Besm2Str.Join(appliesTo, ", ");
       Besm2Str.Add(b, ": "); Besm2Str.Add(b, a^)
     END;
+    (* The sign comes from kind, so counts-as is a number of levels: a
+       negative one would be written "+-1" or "−-1".  Checked after the
+       applies-to items, in the Ada version's order. *)
+    IF countsAs <= 0 THEN RETURN Fail(item.Item(1), "counts-as must be positive") END;
     Besm2Str.AddChar(b, " "); AddSign(b, kind); Besm2Str.AddInt(b, countsAs)
   ELSE
     RETURN Fail(item, "do not understand customizer")

@@ -797,6 +797,18 @@ Each step ends with its tests passing and PLAN.md updated.
     output is the same too. `Line("")` becomes `Besm2Out.Ln`. 78 golden
     files change, in whitespace only.
 
+21. [done] **A counts-as of 0 or less is an input error**, as in
+    besm-tools and the Ada version (ADA-DIFFERENCES 5.1, 13; 5.2 is
+    now empty). The sign comes from the customizer's type, so a
+    negative counts-as was written `+-1` (limiter) or `−-1`
+    (enhancement). `Customizer` now fails with "counts-as must be
+    positive" and the number's path, after checking the applies-to
+    items, in the Ada version's order. The new fixture `bad-counts-as`
+    has a negative limiter and a zero enhancement between two good
+    entities, and `cli.sh` checks the message. `synthetic-2e`'s `[Short,
+    -1]`, and the unit test's, become `[Short, 1]`, so 42 golden files
+    change `Short +-1` to `Short +1`.
+
 ## Open questions
 
 - **Where should the `Args` shim live?** This plan keeps it in
