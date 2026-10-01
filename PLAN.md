@@ -555,7 +555,8 @@ Each step ends with its tests passing and PLAN.md updated.
      before `(effective)`, the sort position of `élan vital`.
    - Two more quirks kept, added to ADA-DIFFERENCES.md, section 5: the
      lines between sections are the three-blank indent alone, and one
-     entity's `.TE` runs straight into the next entity's name.
+     entity's `.TE` runs straight into the next entity's name. (Both
+     since fixed: steps 15 and 20.)
 9. [done] **Error handling** golden tests, `-o`, standard input, several files.
    `golden.sh` now takes modes after the reference (`ada:stdout`,
    `ada:all`, `ada:stdin`, `ada:file`; see `test/golden.cases`), so
@@ -786,6 +787,15 @@ Each step ends with its tests passing and PLAN.md updated.
     longer lists it). `-s`'s help now says "stats, attributes, defects,
     and skills". 97 golden files lose the row, and in grid its
     separator; nothing else changes.
+
+20. [done] **An empty line between raw ms sections**, not the
+    three-blank indent alone, as in besm-tools and the Ada version
+    (ADA-DIFFERENCES 5.1, 12; 5.2 now lists only `+-1`). The line is
+    needed: tbl makes it an empty row, the gap between sections, and
+    without it the sections run together. Its indent isn't: pandoc's
+    ms output is byte-identical with an empty line, and docutils'
+    output is the same too. `Line("")` becomes `Besm2Out.Ln`. 78 golden
+    files change, in whitespace only.
 
 ## Open questions
 

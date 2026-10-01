@@ -20,9 +20,7 @@ CONST
 
 (* ---- Output ---- *)
 
-(* RawPrefix, then s, then a newline.  Line("") writes the prefix
-   alone, trailing blanks and all, as the Ada version and besm2-rst.scm
-   do between sections. *)
+(* RawPrefix, then s, then a newline. *)
 PROCEDURE Line(s: ARRAY OF CHAR);
 BEGIN Besm2Out.String(RawPrefix); Besm2Out.String(s); Besm2Out.Ln
 END Line;
@@ -217,7 +215,7 @@ BEGIN
       Row(s.value, Points(s.points), s.name)
     END;
     IF Besm2Config.showSubtotals THEN TotalRow(Points(e.statsTotal), "STATS TOTAL") END;
-    Line("")
+    Besm2Out.Ln
   END;
 
   IF e.derived.n > 0 THEN
@@ -227,7 +225,7 @@ BEGIN
       d := e.derived.items[i](Besm2Entities.Derived);
       TextRow(d.value, NIL, WithList(ExpandDerivedName(d.name), d.alternatives))
     END;
-    Line("")
+    Besm2Out.Ln
   END;
 
   IF e.attributes.n > 0 THEN
@@ -238,7 +236,7 @@ BEGIN
       TextRow(a.level, Points(a.points), WithParens(a.name, SpaceToNewline(a.details^)))
     END;
     IF Besm2Config.showSubtotals THEN TotalRow(Points(e.attributesTotal), "ATTRIBUTES TOTAL") END;
-    Line("")
+    Besm2Out.Ln
   END;
 
   IF e.defects.n > 0 THEN
@@ -249,7 +247,7 @@ BEGIN
       TextRow(Besm2Str.Empty(), DefectPoints(df.points), WithParens(df.name, SpaceToNewline(df.details^)))
     END;
     IF Besm2Config.showSubtotals THEN TotalRow(SignedPoints(e.defectsTotal), "DEFECTS TOTAL") END;
-    Line("")
+    Besm2Out.Ln
   END;
 
   IF e.skills.n > 0 THEN
@@ -260,7 +258,7 @@ BEGIN
       TextRow(sk.level, Points(sk.points), WithList(sk.name, sk.specialisations))
     END;
     IF Besm2Config.showSubtotals THEN TotalRow(Points(e.skillsTotal), "SKILL POINTS TOTAL") END;
-    Line("")
+    Besm2Out.Ln
   END;
 
   (* The total row has three columns, so it needs a format of its own

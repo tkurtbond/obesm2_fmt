@@ -122,14 +122,16 @@ Fixed later, the same way in all four:
 11. In grid and raw ms, the skill points total was always shown, the
     other subtotals only under `-s`; now it is shown only under `-s`
     too, as in terse and h-m-m. (Step 19.)
+12. In raw ms, the line between sections was the three-blank indent
+    alone (trailing blanks); now it is empty. It is still needed: tbl
+    makes it an empty row, the gap between sections. pandoc's ms and
+    docutils' output are the same either way. (Step 20.)
 
 ### 5.2 Kept on purpose
 
 Faithful to `besm2-rst.scm` in every program, so not differences, but
 they look like bugs:
 
-- In raw ms, each line between sections is the three-blank indent
-  alone (trailing blanks). (Step 8.)
 - A limiter with a negative counts-as value is written `+-1`. (No real
   data file has one.)
 
