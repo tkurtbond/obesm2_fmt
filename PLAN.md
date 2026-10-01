@@ -740,6 +740,27 @@ Each step ends with its tests passing and PLAN.md updated.
       touch. What still differs is in ADA-DIFFERENCES.md, section 4,
       three rows of it new (4.7 to 4.9).
 
+16. [done] **besm-tools has the same 2E fixtures** (besm-tools
+    `test-data/`): the six it lacked, from the Ada version's
+    `test/data/`. `besm2-rst`'s output on them, with the minus sign
+    mapped (4.1), is the Ada version's on `composite-2e` and
+    `sections-2e`, and differs, by design, on the other four:
+    - `composite-multi-doc-2e`: the variants disagree on documents
+      (4.4, now spelled out): `besm2-rst` and `besm2-rst-e` read only
+      the last with the yaml egg and only the first with `-f`;
+      `besm2-rst-f` and `besm2-rst-f-e` read both. besm-tools'
+      `compare-fyaml`, `compare-treefyaml` and `compare-entitytree`
+      leave the file out.
+    - `synthetic-2e`: 4.2, 4.3, 2.1 and 2.2.
+    - `empty-items-2e`, `empty-strings-2e`: empty lists and empty
+      details (4.10, new).
+    The besm-tools README's "Test data" section lists them. Also: the
+    makefiles' comments said `-n` changes nothing in terse or h-m-m
+    output; it changes enhancement and limiter signs (only
+    `synthetic-2e` has a negative one), and the comments now say so.
+    `sections-2e.yaml`'s comment no longer says totals of zero and
+    below have no TOTAL row.
+
 ## Open questions
 
 - **Where should the `Args` shim live?** This plan keeps it in

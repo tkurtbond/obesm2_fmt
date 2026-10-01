@@ -69,12 +69,13 @@ aren't mistaken for port bugs when comparing with `besm2-rst`.
 | 4.1 | Unicode MINUS SIGN (U+2212) by default; `-n`/`--no-unicode-minus` gives ASCII | ASCII by default; `-n` gives U+2212 | The Ada port's own choice (its PLAN.md) |
 | 4.2 | `effective: ""` adds nothing to the level | Writes `1 ()` | Step 6 (grid, terse); steps 7, 8 (h-m-m, raw ms) |
 | 4.3 | Level and `(effective)` joined by an ordinary space | Joined by a no-break space (`C2 A0`) | Step 6 (grid, terse); steps 7, 8 (h-m-m, raw ms) |
-| 4.4 | Reads every document of a multi-document file | Loses documents (a `besm2-rst.scm` bug) | Steps 6, 7; the Ada PLAN.md |
+| 4.4 | Reads every document of a multi-document file | Loses documents (a `besm2-rst.scm` bug): with the yaml egg (the default), and in `besm2-rst-e`, it reads only the last; with `-f`, only the first. `besm2-rst-f` and `besm2-rst-f-e` read every document. | Steps 6, 7; the Ada PLAN.md; confirmed for each variant in step 16 |
 | 4.5 | `mecha: false` turns mecha off; `level` is required for attributes; h-m-m skills emphasize only name and level | Same now: these were `besm2-rst.scm` bugs, fixed upstream (besm-tools `8da3e95`, `6139f21`, `b04abb5`) and ported to Ada | The Ada PLAN.md |
 | 4.6 | `-d`/`--debug` is accepted and does nothing | Traces to standard error (`dbg`/`dfmt`) | besm2_fmt's QUIRKS.md; not worth porting |
 | 4.7 | A points value too big for an integer, a real number, or a `mecha` that isn't a boolean is an input error (`bad-big-int`, `bad-float`, `bad-bool`) | Accepted and written as given (`besm2-rst-f` rejects the last two) | Step 15 |
 | 4.8 | A file with no documents writes nothing and isn't an error | Reported as an error, status 1: the yaml egg can't read an empty stream (`bad argument type - not a list: stream-start`) | Step 15 |
 | 4.9 | Error messages: see 3.1 to 3.5 | `besm2-rst: error processing FILE: MESSAGE` for every input error, with Chicken's own message (`(+) bad argument type - not a number: "lots"`) | Step 15 |
+| 4.10 | An empty list (`alternatives: []`, `specialisations: []`), and attribute or defect details that come out empty (`details: ""`, blank details, `elements: [""]`), are left out, as if absent | Written as an empty `()` (grid, raw ms) or a stray `.` before the points (terse, h-m-m) | Step 16 (`empty-items-2e`, `empty-strings-2e`) |
 
 ## 5. Quirks of `besm2-rst`
 

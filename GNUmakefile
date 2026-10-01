@@ -226,8 +226,9 @@ $(BUILD)/%.ms.pdf: $(BUILD)/%.gen.rst
 
 # h-m-m outlines from the same fixtures, with subtotals (-s), as make
 # rst's: items in their entity's node (-H), and as separate nodes (-S).
-# No PDF (it isn't reST), and no -n variant (h-m-m writes no minus
-# sign: defect points are "N BP").
+# No PDF (it isn't reST), and no -n variant: defect points are written
+# "N BP", so -n changes only enhancement and limiter signs (of the
+# fixtures, only synthetic-2e's), as in terse, which has none either.
 HMM_VARIANTS := % %-separate
 HMM_OUTPUT := $(foreach v,$(HMM_VARIANTS),$(patsubst %,$(BUILD)/$(v).gen.hmm,$(RST_BASES)))
 
