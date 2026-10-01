@@ -92,8 +92,9 @@ options:
   for the ones after it.
 - `-n`: use an ASCII hyphen-minus instead of the Unicode minus sign.
 - `-D`: leave out descriptions.
-- `-b`, `-i`, `-l`, `-M`, `-p`: emphasis and layout for the terse
-  format.
+- `-b`, `-i`, `-l`, `-M`: emphasis and layout for the terse format.
+- `-p`: a page break after each description (shows in ms output; not
+  in h-m-m).
 - `-L N`, `-R TEXT`, `-S`: indentation depth, root node and separate
   nodes for h-m-m.
 
@@ -101,9 +102,10 @@ options:
 
 Exit status:
 
-- 0 when the run finishes, even if some input was bad. A bad entity is
-  reported on standard error, and the rest of its file is skipped.
-- 1 for `-h`, or when output can't be written.
+- 0 when the run finishes with no error, and for `-h`.
+- 1 if some input was bad, or output can't be written. A bad entity is
+  reported on standard error and skipped, and the run goes on; a YAML
+  syntax error ends its file.
 - 2 for a mistake on the command line.
 
 ## Building

@@ -192,30 +192,34 @@ there against the real Scheme binary:
   spaces; only name and level are emphasized in skills (besm-tools
   `b04abb5`).
 - Raw ms: `paragraphSeen`/`firstSectionSeen` bookkeeping; `.T&` before
-  every section but the first; the TOTAL row only when the total is
-  positive; `-p` has no effect here (it is terse-only).
+  every section but the first; the TOTAL row always, and a blank line
+  after `.TE`; `-p` writes a page break after the description, as in
+  grid and terse (step 15; until then, the TOTAL row only when
+  positive, no blank line, and `-p` terse-only).
 
 ## 5. Errors
 
-Ada behaviour to match (as of Ada `8308c10`, step 14; the notes in
-brackets are where the Ada version differed before that):
+Ada behaviour to match (as of Ada `afb25ce`, step 15; the notes in
+brackets are where the Ada version differed before step 14):
 
 | Case | Ada | Status |
 |---|---|---|
-| Bad YAML, missing key, malformed number, top level not a sequence, bad customizer | `besm2_fmt: error processing FILE: MESSAGE` on stderr, skip the rest of that file, continue with the next | 0 |
-| A list or item of the wrong shape (`stats: 5`, an entity that isn't a mapping) | Reported like the row above, with the node's path (step 4) [Ada: unhandled assertion failure, status 1] | 0 |
-| A file that can't be opened | `besm2_fmt: FILE: REASON`, continue with the next | 0 |
+| Missing key, malformed number, bad customizer | `besm2_fmt: error processing FILE: MESSAGE` on stderr, skip that entity, continue with the next | 1 |
+| A list or item of the wrong shape (`stats: 5`, an entity that isn't a mapping) | Reported like the row above, with the node's path (step 4) [Ada: unhandled assertion failure, status 1] | 1 |
+| Top level not a sequence | Reported like the rows above; skip that document, continue with the next | 1 |
+| Bad YAML | Reported like the rows above; skip the rest of that file (libfyaml can't resume), continue with the next | 1 |
+| A file that can't be opened | `besm2_fmt: FILE: REASON`, continue with the next | 1 |
 | Unknown option, missing option argument, bad `-u`/`-U` | diagnostic on stderr | 2 [Ada: 0 for bad `-u`/`-U`; see step 3] |
 | Non-numeric or out-of-range `-w`/`-L` | diagnostic on stderr | 2 |
 | `-o` file can't be created, or output can't be written | `besm2_fmt: can't create PATH: REASON`, `besm2_fmt: error writing output: REASON` | 1 |
-| `-h`/`--help` | usage on stdout | 1 |
+| `-h`/`--help` | usage on stdout | 0 |
 
 In Oberon, `Besm2Entities.Load(node, entity, msg): BOOLEAN` and each
 per-item loader return FALSE with a message on the first error; the
-main module prints it and moves on to the next file. As in Ada, an
-entity is fully loaded before any of it is written, so a failing entity
-writes nothing, while entities before it in the same file are already
-written.
+main module prints it and moves on to the next entity, and exits 1 at
+the end. As in Ada, an entity is fully loaded before any of it is
+written, so a failing entity writes nothing. (Until step 15, an error
+ended its file, and the status stayed 0.)
 
 The Ada and Oberon **messages will differ**, and that is accepted:
 olibfyaml's `err.msg` is gcc-style (`file:line:column: error: missing
@@ -229,7 +233,8 @@ not Ada arg_parser's). Golden tests check exit status only for these.
 `-u`/`-U` with other than one character: the handler writes the Ada
 message to `Err`, flushes `Out`, and calls `Platform.Exit(2)`, since
 ArgParser's own error exit isn't exported. `-h`: the handler calls
-`parser.Usage` and returns FALSE; the main module then exits 1.
+`parser.Usage` and returns FALSE; the main module then exits 0 (1 until
+step 15).
 
 `-w` values below 25 made the Ada program fail with "invalid numeric
 option argument" (status 2) as soon as it built a 3-column row, since
@@ -711,6 +716,29 @@ Each step ends with its tests passing and PLAN.md updated.
       (`FyThin.OpenErrno` `fstat`s the file; reading it instead would
       lose input from a pipe given as a path). `test/cli.sh` checks
       both.
+
+15. [done] **Six `besm2-rst` quirks fixed in all four programs**
+    (besm2_fmt's QUIRKS.md; ADA-DIFFERENCES.md, 5.1), in order:
+    besm-tools `e7fdd75`, besm2_fmt `bf18fa4` and `afb25ce`, then here.
+    - `5a9ff04`, items 1 to 3: the `-R` line goes through `Besm2Out`
+      after `ToFile`, so into the `-o` file; `ProcessDocument` reports
+      an entity that fails to load and goes on with the next, a top
+      level that isn't a sequence ends its document, and a YAML error
+      still ends its file; `Report` and `ReportYaml` set a flag, and
+      the run exits 1 if anything was reported; `--help` exits 0.
+      `test/golden.sh` ends the golden file of a case that exits 1
+      with `==== exit 1 ====` (any other non-zero status fails), as
+      the Ada version's does, since the `bad` globs mix fixtures that
+      do and don't exit 1. `make golden` from the Ada version at
+      `bf18fa4` changed 39 golden files, as there.
+    - `3be8f1e`, items 4 to 6: in grid and raw ms, `-p` writes the
+      page break after the description; raw ms writes a blank line
+      after `.TE` and always the TOTAL row. `make golden` from the Ada
+      version at `afb25ce`: 85 golden files changed, additions only.
+    - Checking the Ada golden files against the fixed `besm2-rst` (its
+      minus sign mapped) found no difference in what these items
+      touch. What still differs is in ADA-DIFFERENCES.md, section 4,
+      three rows of it new (4.7 to 4.9).
 
 ## Open questions
 

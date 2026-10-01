@@ -26,7 +26,7 @@ some messages (section 3).
 |---|---|---|---|
 | 1.1 | **A bad option value was ignored, and the program carried on.** `-u xx`, `-U ab` or `-w 0` printed `Invalid value for option ...`, stopped parsing the command line there, then processed the files named before the bad option, or read standard input if there were none, and exited 0. (Already fixed in the Ada source by Arg_Parser `8528c2a`; the binary was older.) | Error message, exit 2, nothing processed. | Step 3 |
 | 1.2 | **`-w` from 1 to 24 was accepted, then aborted the run.** The first three-column row has no room for its wrapped column: after writing the entity's name and underline, the program stopped with the misleading `besm2_fmt: invalid numeric option argument`, status 2, and later files were never processed. | `-w` must be 25 or more; a smaller value is rejected before anything is read, status 2. | Step 3 |
-| 1.3 | **YAML of the wrong shape crashed the program.** An entity that isn't a mapping, `stats: 5`, `stats:` with no value (null), a list item that isn't a mapping or a scalar, `enhancements: Area`, a customizer of one item (`[Range]`), or an applies-to that is a sequence each ended the run with `raised ADA.ASSERTIONS.ASSERTION_ERROR : failed precondition from libfyaml-nodes.ads:NNN`, status 1, without naming the file. Later files were never processed. | Reported like any other bad data, with the node's path, in the same words (`besm2_fmt: error processing FILE: /0/stats: not a sequence`); the rest of that file is skipped and the run goes on, status 0. Now golden cases (`test/data/shape-*.yaml`). | Step 4; step 9 |
+| 1.3 | **YAML of the wrong shape crashed the program.** An entity that isn't a mapping, `stats: 5`, `stats:` with no value (null), a list item that isn't a mapping or a scalar, `enhancements: Area`, a customizer of one item (`[Range]`), or an applies-to that is a sequence each ended the run with `raised ADA.ASSERTIONS.ASSERTION_ERROR : failed precondition from libfyaml-nodes.ads:NNN`, status 1, without naming the file. Later files were never processed. | Reported like any other bad data, with the node's path, in the same words (`besm2_fmt: error processing FILE: /0/stats: not a sequence`); the rest of that file was skipped and the run went on, status 0 (since 5.1, item 2, only that entity is skipped, and the run exits 1). Now golden cases (`test/data/shape-*.yaml`). | Step 4; step 9 |
 | 1.4 | **Names equal but for case sorted in an arbitrary order** (GNAT's `Generic_Sorting` isn't stable): `armour 1, Armour 2, ARMOUR 3, armour 4` came out as `ARMOUR 3, armour 1, Armour 2, armour 4`. | Document order, as `besm2-rst` (a stable insertion sort in both). `test/data/sort-ties.yaml`'s golden files now come from the Ada binary, and match what `besm2-rst` gave. | Step 5 |
 | 1.5 | **`-o` to a path that couldn't be created died with an unhandled exception**: `raised ADA.IO_EXCEPTIONS.NAME_ERROR : PATH: No such file or directory`, status 1. | `besm2_fmt: can't create PATH: No such file or directory`, status 1. | Step 3 |
 | 1.6 | **A missing or unreadable file was reported as a parse error**: libfyaml's own `[ERR]: failed to open nosuch.yaml`, then `besm2_fmt: error processing nosuch.yaml: document failed to parse`, with no reason given. | The OS reason (wording differs, 3.4). | Step 3 |
@@ -71,29 +71,54 @@ aren't mistaken for port bugs when comparing with `besm2-rst`.
 | 4.3 | Level and `(effective)` joined by an ordinary space | Joined by a no-break space (`C2 A0`) | Step 6 (grid, terse); steps 7, 8 (h-m-m, raw ms) |
 | 4.4 | Reads every document of a multi-document file | Loses documents (a `besm2-rst.scm` bug) | Steps 6, 7; the Ada PLAN.md |
 | 4.5 | `mecha: false` turns mecha off; `level` is required for attributes; h-m-m skills emphasize only name and level | Same now: these were `besm2-rst.scm` bugs, fixed upstream (besm-tools `8da3e95`, `6139f21`, `b04abb5`) and ported to Ada | The Ada PLAN.md |
+| 4.6 | `-d`/`--debug` is accepted and does nothing | Traces to standard error (`dbg`/`dfmt`) | besm2_fmt's QUIRKS.md; not worth porting |
+| 4.7 | A points value too big for an integer, a real number, or a `mecha` that isn't a boolean is an input error (`bad-big-int`, `bad-float`, `bad-bool`) | Accepted and written as given (`besm2-rst-f` rejects the last two) | Step 15 |
+| 4.8 | A file with no documents writes nothing and isn't an error | Reported as an error, status 1: the yaml egg can't read an empty stream (`bad argument type - not a list: stream-start`) | Step 15 |
+| 4.9 | Error messages: see 3.1 to 3.5 | `besm2-rst: error processing FILE: MESSAGE` for every input error, with Chicken's own message (`(+) bad argument type - not a number: "lots"`) | Step 15 |
 
-## 5. Quirks kept on purpose
+## 5. Quirks of `besm2-rst`
 
-Faithful to `besm2-rst.scm` in the Ada version and the port, so not
-differences, but they look like bugs:
+### 5.1 Fixed in all four programs
 
-- `-d`/`--debug` is accepted and does nothing.
-- `-R`/`--hmm-root`'s line goes to standard output even under `-o`.
-- `--help` exits 1, not 0.
-- `-p`/`--page` affects only the terse format.
+Six behaviours copied from `besm2-rst.scm` were defects, and are now
+fixed the same way in `besm2-rst` (and its variants), the Ada version,
+this port and its Ropes rewrite (besm2_fmt's QUIRKS.md; besm-tools
+`e7fdd75`, besm2_fmt `bf18fa4` and `afb25ce`, here `5a9ff04` and
+`3be8f1e`, step 15):
+
+1. `-R`/`--hmm-root`'s line went to standard output even under `-o`;
+   it now goes into the file, first.
+2. An error in an entity ended the rest of its file, and the run still
+   exited 0 (`besm2-rst` exited 2 for a missing key, and processed no
+   later file). Now the entity is reported and writes nothing, the
+   next entity is processed, a YAML error still ends its file, and the
+   run exits 1 if anything was reported. Status 2 stays for
+   command-line mistakes.
+3. `--help` exited 1 (`besm2-rst` wrote the usage to standard error);
+   it now writes the usage to standard output and exits 0.
+4. `-p`/`--page` (a page break after the description) affected only
+   the terse format; grid and raw ms now honour it too. h-m-m doesn't:
+   it is an outline, not pages.
+5. In raw ms there was no blank line between one entity's `.TE` and
+   the next entity's name, so docutils warned at every entity
+   boundary; now there is.
+6. In raw ms the grand total was shown only when positive; now it is
+   always shown, as in grid.
+
+### 5.2 Kept on purpose
+
+Faithful to `besm2-rst.scm` in every program, so not differences, but
+they look like bugs:
+
 - In terse and h-m-m, the Statistics subtotal is followed by a space
   that the other subtotals don't have; defect details are followed by
   two spaces, attribute details by one.
 - In grid and raw ms, the skill points total is always shown, the
-  other subtotals only under `-s`; in raw ms, the grand total is shown
-  only when positive, so an entity whose defects outweigh the rest has
-  no TOTAL row.
+  other subtotals only under `-s`.
 - In raw ms, each line between sections is the three-blank indent
-  alone (trailing blanks), and there is no blank line between one
-  entity's `.TE` and the next entity's name. (Step 8.)
-- A limiter with a negative counts-as value is written `+-1`.
-- An error in an entity ends the rest of its file, not just that
-  entity, and the run's exit status is still 0.
+  alone (trailing blanks). (Step 8.)
+- A limiter with a negative counts-as value is written `+-1`. (No real
+  data file has one.)
 
 ## 6. Defects the port had, fixed
 
