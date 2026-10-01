@@ -259,10 +259,7 @@ BEGIN
       sk := e.skills.items[i](Besm2Entities.Skill);
       TextRow(sk.level, Points(sk.points), WithList(sk.name, sk.specialisations))
     END;
-    (* Unlike the other subtotals, always shown: besm2-rst.scm's
-       process-entity-raw-ms doesn't check *show-subtotals* here, as
-       in the grid format. *)
-    TotalRow(Points(e.skillsTotal), "SKILL POINTS TOTAL");
+    IF Besm2Config.showSubtotals THEN TotalRow(Points(e.skillsTotal), "SKILL POINTS TOTAL") END;
     Line("")
   END;
 

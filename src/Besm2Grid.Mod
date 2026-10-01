@@ -245,10 +245,10 @@ BEGIN
       Row3(sk.level, Points(sk.points), SkillDescription(sk));
       Sep3
     END;
-    (* Unlike the other subtotals, always shown: besm2-rst.scm's
-       process-entity doesn't check *show-subtotals* here. *)
-    Row3(empty, HS(Points(e.skillsTotal)), H("SKILL POINTS TOTAL"));
-    Sep3;
+    IF Besm2Config.showSubtotals THEN
+      Row3(empty, HS(Points(e.skillsTotal)), H("SKILL POINTS TOTAL"));
+      Sep3
+    END;
     EmptyOrBlankLine
   END;
 

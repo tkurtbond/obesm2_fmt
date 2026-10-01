@@ -178,7 +178,7 @@ BEGIN
     DoNoUnicodeMinus));
   Opt(ArgParser.MakeStringOption("o", "output", "Output file.", DoOutput));
   Opt(ArgParser.MakeOption("p", "page", "Page after description. (Only for ms output!)", DoPage));
-  Opt(ArgParser.MakeOption("s", "subtotals", "Show subtotals for stats, attributes, and defects.", DoSubtotals));
+  Opt(ArgParser.MakeOption("s", "subtotals", "Show subtotals for stats, attributes, defects, and skills.", DoSubtotals));
   Opt(ArgParser.MakeOption("t", "terse", "Use terse output.", DoTerse));
   Opt(ArgParser.MakeStringOption("U", "subunderliner",
     "Entities after the first are subentities, and use a different character for underlining the subheader.",

@@ -119,14 +119,15 @@ Fixed later, the same way in all four:
    details by `". "`; now all three have one space. (Step 18.)
 10. In h-m-m, the description line ended with a trailing blank; now it
     doesn't. (Step 18.)
+11. In grid and raw ms, the skill points total was always shown, the
+    other subtotals only under `-s`; now it is shown only under `-s`
+    too, as in terse and h-m-m. (Step 19.)
 
 ### 5.2 Kept on purpose
 
 Faithful to `besm2-rst.scm` in every program, so not differences, but
 they look like bugs:
 
-- In grid and raw ms, the skill points total is always shown, the
-  other subtotals only under `-s`.
 - In raw ms, each line between sections is the three-blank indent
   alone (trailing blanks). (Step 8.)
 - A limiter with a negative counts-as value is written `+-1`. (No real

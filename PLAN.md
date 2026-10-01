@@ -180,7 +180,8 @@ there against the real Scheme binary:
 - Header underlines use the name's **byte** length (`Name'Length`), not
   its display length. Port with `Besm2Str.Length`, not `DisplayLength`.
 - Grid: defect points always get `\` + minus glyph; the skills total
-  row and the grand TOTAL row are unconditional; `derived` abbreviations
+  row and the grand TOTAL row are unconditional (the skills total only
+  under `-s` since step 19); `derived` abbreviations
   (`ACV` to `Attack Combat Value`, ...) are expanded only in grid and
   raw-ms.
 - Terse/h-m-m: `Label_Points` suffixes `CP`/`BP`/`MP`/`MBP`; the
@@ -778,6 +779,13 @@ Each step ends with its tests passing and PLAN.md updated.
     other subtotals don't, and the h-m-m description line ended with a
     blank. The golden files change in spaces only (`git diff -w` shows
     nothing).
+
+19. [done] **The skill points total only under `-s`**, in grid and raw
+    ms, like the other subtotals and as in terse and h-m-m, and as in
+    besm-tools and the Ada version (ADA-DIFFERENCES 5.1, 11; 5.2 no
+    longer lists it). `-s`'s help now says "stats, attributes, defects,
+    and skills". 97 golden files lose the row, and in grid its
+    separator; nothing else changes.
 
 ## Open questions
 

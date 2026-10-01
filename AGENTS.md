@@ -197,9 +197,9 @@ Confirmed in olibfyaml or ArgParser unless noted.
 
 - Keep each Oberon module traceable to its Ada counterpart (PLAN.md has
   the mapping). Keep the Ada comments that explain *why* something
-  matches `besm2-rst.scm` (the Unicode minus, the `mecha` fix, the
-  unconditional skill total, ...), adapted to Oberon; they record
-  behaviour that was confirmed against the real Scheme binary.
+  matches `besm2-rst.scm` (the Unicode minus, the `mecha` fix, ...),
+  adapted to Oberon; they record behaviour that was confirmed against
+  the real Scheme binary.
 - Comments explain why, and only claim what has been verified. If a
   comment depends on how voc, libfyaml or ArgParser behaves, test it
   with a throwaway program in the scratchpad first.
