@@ -21,7 +21,7 @@ notes, not a design doc.
 | Ada binary (the golden-output oracle) | `~/Repos/RPG/Tools/besm2_fmt/besm2_fmt` (build with `make` there) |
 | Original Scheme binary | `~/local/bin/besm2-rst` (on `PATH`); note its defaults differ from the Ada version's (the minus sign) |
 | Original Scheme program | `besm2-rst.scm` in besm-tools |
-| ArgParser (command-line parsing) | `~/Repos/Oberon/ArgParser/` (`AGENTS.md`, `ArgParser.Mod`, `Err.Mod`); installed copies in `$OBERON_MODULES` (default `/usr/local/sw/versions/oberon/include`) |
+| ArgParser (command-line parsing) | `~/Repos/Oberon/ArgParser/` (`AGENTS.md`, `ArgParser.Mod`, `Err.Mod`); installed copies in `$VOC_OBERON_MODULES` (default `/usr/local/sw/versions/oberon/voc/include`) |
 | olibfyaml (YAML) | `~/Repos/Oberon/olibfyaml/` (`AGENTS.md`, `README.md`, `src/FyThin.Mod`, `src/Fyaml.Mod`, `src/FyamlStreams.Mod`) |
 | voc compiler | `/usr/local/sw/versions/voc/git/bin/voc`; not on the default `PATH` |
 | voc source and runtime | `/usr/local/sw/src/lang/Oberon/vishap/compiler/` (`src/runtime/`, `src/library/`) |
@@ -66,7 +66,7 @@ make print-VAR  # show a makefile variable
   long, `--name=value` and ranged integer options correctly.
 - **Don't copy `ArgParser.Mod`, `Err.Mod` or olibfyaml's modules into
   this repo.** The makefile finds `ArgParser.Mod`/`Err.Mod` through
-  `vpath` in `OBERON_MODULES` (as ArgParser's AGENTS.md asks) and
+  `vpath` in `VOC_OBERON_MODULES` (as ArgParser's AGENTS.md asks) and
   olibfyaml's through `OLIBFYAML` (default `~/Repos/Oberon/olibfyaml`),
   and voc compiles them into `obj/`.
 - voc writes `Mod.c`/`.h`/`.sym`/`.o` into the current directory, so

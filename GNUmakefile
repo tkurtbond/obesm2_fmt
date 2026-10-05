@@ -37,11 +37,11 @@ endif
 export CFLAGS := -ffixed-rbx -ffixed-r12 -ffixed-r13 -ffixed-r14 -ffixed-r15
 
 # ArgParser.Mod and Err.Mod are installed by the ArgParser repo into the
-# first directory of OBERON_MODULES (colon-separated); olibfyaml's
+# first directory of VOC_OBERON_MODULES (colon-separated); olibfyaml's
 # modules are used from its checkout.  Neither is copied here.
-OBERON_MODULES ?= /usr/local/sw/versions/oberon/include
+VOC_OBERON_MODULES ?= /usr/local/sw/versions/oberon/voc/include/
 OLIBFYAML      ?= $(HOME)/Repos/Oberon/olibfyaml
-vpath %.Mod rtl src test $(subst :, ,$(OBERON_MODULES)) $(OLIBFYAML)/src
+vpath %.Mod rtl src test $(subst :, ,$(VOC_OBERON_MODULES)) $(OLIBFYAML)/src
 
 OBJ   := obj
 BUILD := build
@@ -66,7 +66,7 @@ TESTBINS := $(TESTS:%=$(OBJ)/%)
 # Only building needs the shared modules, so the cleaning targets don't
 # check for them.
 ifneq ($(if $(MAKECMDGOALS),$(filter-out clean testclean uninstall,$(MAKECMDGOALS)),all),)
-$(foreach m,ArgParser.Mod Err.Mod,$(if $(wildcard $(addsuffix /$(m),$(subst :, ,$(OBERON_MODULES)))),,$(error $(m) is not in OBERON_MODULES ($(OBERON_MODULES)); run make install in ~/Repos/Oberon/ArgParser)))
+$(foreach m,ArgParser.Mod Err.Mod,$(if $(wildcard $(addsuffix /$(m),$(subst :, ,$(VOC_OBERON_MODULES)))),,$(error $(m) is not in VOC_OBERON_MODULES ($(VOC_OBERON_MODULES)); run make install in ~/Repos/Oberon/ArgParser)))
 $(if $(wildcard $(OLIBFYAML)/src/Fyaml.Mod),,$(error olibfyaml not found in OLIBFYAML ($(OLIBFYAML))))
 endif
 

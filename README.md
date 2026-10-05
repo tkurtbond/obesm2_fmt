@@ -117,7 +117,7 @@ You need:
 - libfyaml, found through `pkg-config`.
 - `ArgParser.Mod` and `Err.Mod` from
   [ArgParser](https://github.com/tkurtbond/ArgParser), installed into
-  `OBERON_MODULES` (default `/usr/local/sw/versions/oberon/include`).
+  `VOC_OBERON_MODULES` (default `/usr/local/sw/versions/oberon/voc/include`).
 - A checkout of olibfyaml at `OLIBFYAML` (default
   `~/Repos/Oberon/olibfyaml`).
 

@@ -95,7 +95,7 @@ its own type rather than an alias of `Fyaml.String`, for the same
 reason; `Besm2Entities` copies scalars across. (A scalar with an
 embedded 0X would be cut short there; no BESM file has one.)
 
-Ropes (`OBERON_MODULES/Ropes.Mod`) was considered for strings and
+Ropes (`VOC_OBERON_MODULES/Ropes.Mod`) was considered for strings and
 rejected: every string here is short and built once, and a flat buffer
 is simpler to pad, wrap and measure.
 
@@ -320,7 +320,7 @@ Each step ends with its tests passing and PLAN.md updated.
 
 1. [done] **Scaffolding.** `GNUmakefile` (`obj/` for voc output, `build/` for
    rendered reST/PDF as in the Ada makefile, `vpath` for
-   `OBERON_MODULES`, `OLIBFYAML`, `-OC`, exported `LDLIBS`, copying
+   `VOC_OBERON_MODULES`, `OLIBFYAML`, `-OC`, exported `LDLIBS`, copying
    `obj/Besm2Fmt` to `besm2_fmt`), `rtl/Args.Mod`, `.gitignore`,
    `test/Check.Mod`, and a stub `Besm2Fmt` that imports `ArgParser` and
    `FyamlStreams`, to prove the whole toolchain links under `-OC`.
@@ -331,7 +331,7 @@ Each step ends with its tests passing and PLAN.md updated.
    `nosuch.yaml: error: No such file or directory`. A second `make`
    does nothing. Findings:
    - The makefile's single `$(OBJ)/%.o: %.Mod` rule finds each module
-     through `vpath` in `rtl`, `src`, `test`, `OBERON_MODULES` and
+     through `vpath` in `rtl`, `src`, `test`, `VOC_OBERON_MODULES` and
      `$(OLIBFYAML)/src`, and passes voc the absolute path.
    - **voc's `-M` (fully static link) doesn't work here**: there is no
      static `libfyaml` (`ld: cannot find -lfyaml`). The program is
@@ -813,7 +813,7 @@ Each step ends with its tests passing and PLAN.md updated.
 
 - **Where should the `Args` shim live?** This plan keeps it in
   `rtl/Args.Mod` here. It would be better installed with ArgParser
-  (say as `oc-rtl/Args.Mod`, installed to `OBERON_MODULES/oc/`) so any
+  (say as `oc-rtl/Args.Mod`, installed to `VOC_OBERON_MODULES/oc/`) so any
   `-OC` program, including olibfyaml users, can use ArgParser. That is
   a change to the ArgParser repo, so it needs the user's go-ahead.
 - **Case-insensitive sort beyond ASCII.** (Step 6 confirmed that
