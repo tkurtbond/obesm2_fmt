@@ -228,8 +228,9 @@ required key "points"`), better than the Ada text. The main module
 prints `besm2_fmt: ` followed by it. For errors the port detects itself
 (top level not a sequence, bad customizer), it uses the Ada wording.
 The file name for standard input becomes olibfyaml's `<stdin>` rather
-than Ada's `(stdin)`. The usage text also differs (ArgParser's format,
-not Ada arg_parser's). Golden tests check exit status only for these.
+than Ada's `(stdin)` (since 2026-10-10 olibfyaml's is `(stdin)` too).
+The usage text also differs (ArgParser's format, not Ada arg_parser's).
+Golden tests check exit status only for these.
 
 `-u`/`-U` with other than one character: the handler writes the Ada
 message to `Err`, flushes `Out`, and calls `Platform.Exit(2)`, since
@@ -421,7 +422,8 @@ Each step ends with its tests passing and PLAN.md updated.
      message, which already names the file, instead of
      `besm2_fmt: error processing FILE: ...` (which named it twice).
      Errors the port finds itself keep the Ada wording. Standard input
-     is `<stdin>` in both.
+     is `<stdin>` in both (`(stdin)` since olibfyaml's change of
+     2026-10-10).
 4. [done] **`Besm2Entities`**, checked by `TestEntities` rather than
    by a debug dump under `-d` as first planned: the Ada version never
    reads `-d`/`Debugging`, so making `-d` print something would be a

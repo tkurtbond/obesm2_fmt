@@ -122,10 +122,10 @@ else
   echo "FAIL - a full standard output exits 1 with the OS reason"; sed 's/^/    /' "$tmp/err"; failed=$((failed + 1))
 fi
 "$prog" <"$data/bad-int.yaml" >/dev/null 2>"$tmp/err"
-if grep -q '^besm2_fmt: <stdin>:5:42: error: /1/stats/0/points: not a valid integer: "lots"$' "$tmp/err"; then
-  echo "ok   - errors in standard input name it <stdin>"
+if grep -q '^besm2_fmt: (stdin):5:42: error: /1/stats/0/points: not a valid integer: "lots"$' "$tmp/err"; then
+  echo "ok   - errors in standard input name it (stdin)"
 else
-  echo "FAIL - errors in standard input name it <stdin>"; sed 's/^/    /' "$tmp/err"; failed=$((failed + 1))
+  echo "FAIL - errors in standard input name it (stdin)"; sed 's/^/    /' "$tmp/err"; failed=$((failed + 1))
 fi
 printf -- 'a: 1\n' >"$tmp/map.yaml"
 check "a top level that isn't a sequence is reported" 1 \
@@ -140,7 +140,7 @@ else
 fi
 
 # With no file names, standard input is read.
-if "$prog" <"$f" | cmp -s - <("$prog" "$f" | sed "s|$f|<stdin>|"); then
+if "$prog" <"$f" | cmp -s - <("$prog" "$f" | sed "s|$f|(stdin)|"); then
   echo "ok   - no file names reads standard input"
 else
   echo "FAIL - no file names reads standard input"; failed=$((failed + 1))
