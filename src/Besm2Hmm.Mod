@@ -179,7 +179,7 @@ END Subtotal;
    headers -- and taken only so that every format is called the same
    way, as in the Ada version. *)
 PROCEDURE ProcessEntity*(e: Besm2Entities.Entity; entityNo: INTEGER);
-  VAR d1, d2, d3: INTEGER; flat: String;
+  VAR d1, d2, d3, i: INTEGER; flat: String;
 BEGIN
   d1 := Besm2Config.hmmDepth + 1;   (* the entity *)
   d2 := d1 + 1;                     (* its sections *)
@@ -239,6 +239,22 @@ BEGIN
     END;
     Besm2Out.Ln;
     Items(e.skills, e.mecha, d3)
+  END;
+
+  (* The notes, joined with "; " (a note may hold commas), or one per
+     node under -S/--hmm-separate. *)
+  IF e.notes.n > 0 THEN
+    Heading(d2, "Notes"); Besm2Out.Ln;
+    Indent(d3);
+    FOR i := 0 TO e.notes.n - 1 DO
+      IF i > 0 THEN
+        IF Besm2Config.hmmSeparate THEN Besm2Out.Ln; Indent(d3)
+        ELSE Besm2Out.String("; ")
+        END
+      END;
+      Besm2Out.Str(AllOneLine(e.notes.items[i]^))
+    END;
+    Besm2Out.Ln
   END
 END ProcessEntity;
 

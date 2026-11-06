@@ -214,7 +214,9 @@ BEGIN
     END;
     Besm2Out.String(" — "); Besm2Out.Ln;
     Items(e.skills, e.mecha)
-  END
+  END;
+
+  Besm2Layout.Notes(e.notes)
 END ProcessEntity;
 
 END Besm2Terse.

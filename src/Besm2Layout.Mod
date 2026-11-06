@@ -216,6 +216,28 @@ BEGIN
   RETURN asciiMinus
 END MinusGlyph;
 
+(* The entity's notes, if any, as a reStructuredText bullet list after a
+   bold "Notes:" paragraph, one note per item, the lines after a note's
+   first indented two blanks so it stays one item: the terse, grid and
+   raw ms formats all end an entity with this. *)
+PROCEDURE Notes*(l: Besm2Str.List);
+  VAR i, j: LONGINT; s: String;
+BEGIN
+  IF l.n > 0 THEN
+    Besm2Out.Str(Bold("Notes:")); Besm2Out.Ln; Besm2Out.Ln;
+    FOR i := 0 TO l.n - 1 DO
+      s := l.items[i]; Besm2Out.String("- "); j := 0;
+      WHILE (j < LEN(s^)) & (s[j] # 0X) DO
+        Besm2Out.Char(s[j]);
+        IF s[j] = 0AX THEN Besm2Out.String("  ") END;
+        INC(j)
+      END;
+      Besm2Out.Ln
+    END;
+    Besm2Out.Ln
+  END
+END Notes;
+
 BEGIN
   unicodeMinus := Besm2Str.Of("−");   (* U+2212, UTF-8 E2 88 92 *)
   asciiMinus := Besm2Str.Of("-")

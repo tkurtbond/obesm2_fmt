@@ -125,16 +125,18 @@ BEGIN
     & Is(Name(e.attributes, 8), "Weapon: Plasma Fist") & Is(Name(e.attributes, 10), "Weapon: Rocket Pod"),
     "attributes sorted by name");
   a := e.attributes.items[9](Besm2Entities.Attribute);
-  Check.Check(Is(a.details, "Damage 45, Long-Range, Unreliable"),
+  Check.Check(Is(a.details, "Damage ACV+45, Long-Range: 5 km, Unreliable"),
     "a block scalar's trailing newline is trimmed from details");
   a := e.attributes.items[10](Besm2Entities.Attribute);
-  msg := Besm2Str.Concat3("Damage 45, Auto-fire, Area Effect, Limited Shots ×2 [3 shots],", 0AX, "Stoppable");
+  msg := Besm2Str.Concat3("Damage ACV+45, Auto-fire, Area Effect, Limited Shots ×2: 3 shots,", 0AX, "Stoppable");
   Check.Check(Is(a.details, msg^), "an embedded newline is kept in details (the formats deal with it)");
   df := e.defects.items[0](Besm2Entities.Defect);
-  Check.Check(Is(df.details, "Huge (1-10 tonnes)"), "defect details trimmed");
+  Check.Check(Is(df.details, "Large: 1-10 tonnes"), "defect details trimmed");
   Check.Check(Is(Name(e.defects, 1), "Hanger Queen"), "defects sorted");
-  (* The Ada terse output: 44 MP, 4 MBP, 40 MP. *)
-  Check.Check((e.attributesTotal = 44) & (e.defectsTotal = -4) & (e.entityTotal = 40),
+  Check.Check((e.notes.n = 1) & Is(e.notes.items[0], "Punch: Damage ACV+10, Muscle-Powered, Melee"),
+    "one note");
+  (* The Ada terse output: 43 MP, 3 MBP, 40 MP. *)
+  Check.Check((e.attributesTotal = 43) & (e.defectsTotal = -3) & (e.entityTotal = 40),
     "totals match the Ada -t output")
 END Coleopteran;
 
@@ -171,7 +173,12 @@ BEGIN
     & (e.skills.n = 3) & Is(Name(e.skills, 0), "A") & Is(Name(e.skills, 1), "a") & Is(Name(e.skills, 2), "b"),
     "skills sorted ignoring case, equal names kept in order");
   Check.Check(FromText('- {derived: [{name: DCV, value: 5, alternatives: [x, y]}]}')
-    & (e.derived.items[0](Besm2Entities.Derived).alternatives.n = 2), "derived alternatives")
+    & (e.derived.items[0](Besm2Entities.Derived).alternatives.n = 2), "derived alternatives");
+  Check.Check(FromText('- {notes: [b, "  a  ", "x\n  y\n"]}') & (e.notes.n = 3)
+    & Is(e.notes.items[0], "b") & Is(e.notes.items[1], "a"),
+    "notes keep their order and are trimmed");
+  Check.Check(FromText('- {notes: []}') & (e.notes.n = 0), "an empty notes list");
+  Check.Check(FromText('- {name: X}') & (e.notes.n = 0), "no notes")
 END Misc;
 
 PROCEDURE Errors;

@@ -257,7 +257,9 @@ BEGIN
   Sep3;
   Row3(empty, HS(SignedPoints(e.entityTotal)), H("TOTAL"));
   Sep3;
-  Besm2Out.Ln
+  Besm2Out.Ln;
+
+  Besm2Layout.Notes(e.notes)
 END ProcessEntity;
 
 BEGIN

@@ -110,6 +110,8 @@ check "a bad customizer is reported in the Ada wording, with its path" 1 \
 check "a counts-as that isn't positive is reported in the Ada wording, with its path" 1 \
   'error processing .*bad-counts-as\.yaml: /2/attributes/0/enhancements/0/1: counts-as must be positive$' \
   "$data/bad-counts-as.yaml"
+check "a note that isn't a string is reported with its path" 1 \
+  'error processing .*bad-notes\.yaml: /1/notes/0: not a scalar$' "$data/bad-notes.yaml"
 check "a file with no documents is not an error" 0 '' "$data/edge-empty.yaml"
 check "an empty document is an error" 1 \
   'expected a top-level YAML sequence of entities in .*bad-empty-doc\.yaml$' "$data/bad-empty-doc.yaml"
