@@ -46,6 +46,21 @@ from `besm2-rst.scm`, whose behaviour is arguably the right one.
 | 2.1 | **Case-insensitive sorting folds bytes, not characters.** `Ada.Characters.Handling.To_Lower` lowers `A`..`Z` and Latin-1 bytes `C0`..`DE` (except `D7`). In UTF-8 those are lead bytes, so non-ASCII letters aren't lowered at all, and names starting with some of them move: `élan vital` sorts after `“Quoted” Power`. The result is neither ASCII-only nor Unicode folding. | Folds by Unicode character: `élan vital` sorts before `“Quoted” Power`. | Steps 2, 6 (all formats; seen in h-m-m and raw ms in steps 7, 8); PLAN.md open question |
 | 2.2 | **Header underlines are as long as the name in bytes**, so a name with non-ASCII characters gets a longer underline than it needs (21 characters for the 16 of `Rana “Frog” Élan`). Harmless in reST. | As long as the name in characters. | Step 6 (grid, terse); step 8 (raw ms) |
 
+### 2a. Defects in the Ada version that the port doesn't copy, left as they are
+
+Found while analysing the formatters for besm2_cg_po
+(`~/Repos/RPG/Tools/besm2_cg_po/PLAN.md`, "A1 results", 2026-11-06).
+They aren't fixed because real files never reach them. Character,
+Bonus and Skill Point values stay far below 32 bits, and the files
+besm2_cg_po writes have no aliases. Its `besm2_calc_po --check`
+reports a number outside −999..999 as an error and any alias as a
+warning. The port's own behaviour in 2a.2 is a defect too.
+
+| # | Ada behaviour | Port behaviour | Found |
+|---|---|---|---|
+| 2a.1 | **YAML aliases aren't resolved.** `points: *p` (with `&p 6` earlier) gives `error processing FILE: not a valid integer: "p"`. `name: *n` prints the alias's name, `n`, without complaint. An aliased entity (`- *h`) gives `/2: not a mapping`. The entity is skipped and the run exits 1. | Aliases are resolved, as YAML says (olibfyaml), exit 0. | besm2_cg_po A1 |
+| 2a.2 | **A total too big for an integer stops the run.** Each `points` value is in range, but their sum isn't (`points: 2147483647` plus `points: 2`): `raised CONSTRAINT_ERROR : besm2_fmt-entities.adb:351 overflow check failed`, status 1. The message names neither the value nor the entity, and the rest of the file is lost. | Wraps silently: `Hero (2147483647 BP)`, status 0. | besm2_cg_po A1 |
+
 ## 3. Deliberate differences between the Ada version and the port
 
 Neither is wrong; the port chose differently, and golden tests don't
