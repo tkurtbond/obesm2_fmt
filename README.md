@@ -28,14 +28,14 @@ and the Ada defects the port was written to avoid, see
   derived:
     - {name: ACV, value: 9}
   attributes:
-    - name: Extra Actions
+    - name: Extra Attacks
       level: 1
       points: 4
-      details: +1 Extra Action
+      details: +1 Extra Attack
   defects:
     - {name: "Conditional Ownership: Army ownership", points: -2}
   skills:
-    - {name: Law, level: 1, points: 2, specialisations: [Military]}
+    - {name: Law, level: 1, points: 1, specialisations: [Military]}
 ```
 
 `besm2_fmt -t -s` (terse, with subtotals) gives
@@ -50,13 +50,13 @@ Body 8 (8 CP), Mind 6 (6 CP), Soul 6 (6 CP)
 **Derived Values** — ACV 9
 
 **Attributes** (4 CP) — 
-Extra Actions 1 (+1 Extra Action. 4 CP)
+Extra Attacks 1 (+1 Extra Attack. 4 CP)
 
 **Defects** (2 BP) — 
 Conditional Ownership: Army ownership (2 BP)
 
-**Skills** (2 SP) — 
-Law 1 (Military.  2 SP)
+**Skills** (1 SP) — 
+Law 1 (Military.  1 SP)
 ```
 
 A file holds a YAML sequence of entities, and may hold several

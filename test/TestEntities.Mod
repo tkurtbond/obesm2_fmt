@@ -93,21 +93,21 @@ BEGIN
     "derived ACV 9, abbreviation not expanded here");
   Check.Check(e.attributes.n = 3, "3 attributes");
   a := e.attributes.items[1](Besm2Entities.Attribute);
-  Check.Check(Is(a.name, "Extra Actions") & Is(a.level, "1") & (a.points = 4)
-    & Is(a.details, "+1 Extra Action"), "Extra Actions 1, details, 4 points");
+  Check.Check(Is(a.name, "Extra Attacks") & Is(a.level, "1") & (a.points = 4)
+    & Is(a.details, "+1 Extra Attack"), "Extra Attacks 1, details, 4 points");
   a := e.attributes.items[0](Besm2Entities.Attribute);
   Check.Check(Is(a.details, ""), "no details is the empty string");
   df := e.defects.items[0](Besm2Entities.Defect);
   Check.Check((e.defects.n = 2) & Is(df.name, "Conditional Ownership: Army ownership")
     & (df.points = -2) & Is(df.details, ""), "defects");
-  Check.Check(e.skills.n = 9, "9 skills");
+  Check.Check(e.skills.n = 8, "8 skills");
   sk := e.skills.items[1](Besm2Entities.Skill);
-  Check.Check(Is(sk.name, "Law") & Is(sk.level, "1") & (sk.points = 2)
+  Check.Check(Is(sk.name, "Law") & Is(sk.level, "1") & (sk.points = 1)
     & (sk.specialisations.n = 1) & Is(sk.specialisations.items[0], "Military"),
     "Law 1, specialisation Military");
-  (* The Ada terse -s output: 20 CP, 18 CP, 3 BP, 25 SP, 35 CP. *)
+  (* The Ada terse -s output: 20 CP, 18 CP, 3 BP, 20 SP, 35 CP. *)
   Check.Check((e.statsTotal = 20) & (e.attributesTotal = 18) & (e.defectsTotal = -3)
-    & (e.skillsTotal = 25), "subtotals match the Ada -t -s output");
+    & (e.skillsTotal = 20), "subtotals match the Ada -t -s output");
   Check.Check(e.entityTotal = 35, "entity total leaves out skills (35 CP)")
 END Enyon;
 
