@@ -22,11 +22,17 @@ CONST
      header just gets some slack.  Ported as is. *)
   NumWidth* = 10;
 
+  (* What follows an overridden number ("overrides:", besm2_cg_po's
+     PLAN.md, A4) in the terse and grid formats: "*", escaped so that
+     reST doesn't read it as the start of emphasis, as ova_fmt writes
+     it. *)
+  OverrideMark* = "\*";
+
 TYPE
   String* = Besm2Str.String;
 
 VAR
-  unicodeMinus, asciiMinus: String;
+  unicodeMinus, asciiMinus, unicodeTimes, asciiTimes: String;
 
 (* s padded with blanks to width characters (DisplayLength, not bytes),
    on the right for LeftAlign, on the left for RightAlign.  s is
@@ -216,6 +222,16 @@ BEGIN
   RETURN asciiMinus
 END MinusGlyph;
 
+(* MULTIPLICATION SIGN (U+00D7) by default, or "x" under
+   -n/--no-unicode-minus: the "×2" of a Weapon Attack Ability or
+   Disability taken twice (besm2_cg_po's PLAN.md, A4; the book writes
+   "x 2", p. 92). *)
+PROCEDURE TimesGlyph*(): String;
+BEGIN
+  IF Besm2Config.unicodeMinus THEN RETURN unicodeTimes END;
+  RETURN asciiTimes
+END TimesGlyph;
+
 (* The entity's notes, if any, as a reStructuredText bullet list after a
    bold "Notes:" paragraph, one note per item, the lines after a note's
    first indented two blanks so it stays one item: the terse, grid and
@@ -240,5 +256,7 @@ END Notes;
 
 BEGIN
   unicodeMinus := Besm2Str.Of("−");   (* U+2212, UTF-8 E2 88 92 *)
-  asciiMinus := Besm2Str.Of("-")
+  asciiMinus := Besm2Str.Of("-");
+  unicodeTimes := Besm2Str.Of("×");   (* U+00D7, UTF-8 C3 97 *)
+  asciiTimes := Besm2Str.Of("x")
 END Besm2Layout.

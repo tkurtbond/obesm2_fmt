@@ -118,8 +118,9 @@ $(OBJ)/Test%: test/Test%.Mod $(LIBOBJS) $(SUPPOBJS) $(OBJ)/cflags | $(OBJ)
 
 # Every unit test, run from $(OBJ) (where TestLayout writes its capture
 # files), then the command-line checks of test/cli.sh, then the
-# golden-output comparison of test/golden.sh; fail at the end if any
-# failed.  regs.sh checks every object for the registers CFLAGS forbids.
+# golden-output comparison of test/golden.sh, then the upgraded
+# fixtures against their originals (test/upgraded.sh); fail at the end
+# if any failed.  regs.sh checks every object for the registers CFLAGS forbids.
 test: $(PROGRAM) $(TESTBINS)
 	@status=0; for t in $(TESTS); do \
 	  echo "== $$t"; (cd $(OBJ) && ./$$t) || status=1; \
@@ -127,6 +128,7 @@ test: $(PROGRAM) $(TESTBINS)
 	echo "== regs.sh"; test/regs.sh $(OBJ) || status=1; \
 	echo "== cli.sh"; test/cli.sh ./$(PROGRAM) || status=1; \
 	echo "== golden.sh"; test/golden.sh check ./$(PROGRAM) || status=1; \
+	echo "== upgraded.sh"; test/upgraded.sh ./$(PROGRAM) || status=1; \
 	exit $$status
 
 # The program under valgrind (step 11): every fixture in each format,

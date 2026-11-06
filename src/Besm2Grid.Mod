@@ -89,6 +89,14 @@ BEGIN
   RETURN Points(n)
 END SignedPoints;
 
+(* n's text followed by Besm2Layout.OverrideMark if marked (an
+   overridden number), else n unchanged. *)
+PROCEDURE Mark(n: String; marked: BOOLEAN): String;
+BEGIN
+  IF marked THEN RETURN Besm2Str.Concat(n^, Besm2Layout.OverrideMark) END;
+  RETURN n
+END Mark;
+
 (* ---- Cell text: besm2-rst.scm's process-derived and friends ---- *)
 
 (* besm2-rst.scm's derived-abbreviations.  Only the grid and raw ms
@@ -182,7 +190,7 @@ BEGIN
     Headsep3;
     FOR i := 0 TO e.stats.n - 1 DO
       s := e.stats.items[i](Besm2Entities.Stat);
-      Row3(s.value, Points(s.points), s.name);
+      Row3(s.value, Mark(Points(s.points), s.pointsMark), s.name);
       Sep3
     END;
     IF Besm2Config.showSubtotals THEN
@@ -198,7 +206,7 @@ BEGIN
     Headsep2;
     FOR i := 0 TO e.derived.n - 1 DO
       d := e.derived.items[i](Besm2Entities.Derived);
-      Row2(d.value, DerivedDescription(d));
+      Row2(Mark(d.value, d.valueMark), DerivedDescription(d));
       Sep2
     END;
     EmptyOrBlankLine
@@ -210,7 +218,7 @@ BEGIN
     Headsep3;
     FOR i := 0 TO e.attributes.n - 1 DO
       a := e.attributes.items[i](Besm2Entities.Attribute);
-      Row3(a.level, Points(a.points), WithParens(a.name, a.details));
+      Row3(a.level, Mark(Points(a.points), a.pointsMark), WithParens(a.name, a.markedDetails));
       Sep3
     END;
     IF Besm2Config.showSubtotals THEN
@@ -226,7 +234,7 @@ BEGIN
     Headsep3;
     FOR i := 0 TO e.defects.n - 1 DO
       df := e.defects.items[i](Besm2Entities.Defect);
-      Row3(empty, DefectPoints(df.points), WithParens(df.name, df.details));
+      Row3(empty, Mark(DefectPoints(df.points), df.pointsMark), WithParens(df.name, df.details));
       Sep3
     END;
     IF Besm2Config.showSubtotals THEN
@@ -242,7 +250,7 @@ BEGIN
     Headsep3;
     FOR i := 0 TO e.skills.n - 1 DO
       sk := e.skills.items[i](Besm2Entities.Skill);
-      Row3(sk.level, Points(sk.points), SkillDescription(sk));
+      Row3(sk.level, Mark(Points(sk.points), sk.pointsMark), SkillDescription(sk));
       Sep3
     END;
     IF Besm2Config.showSubtotals THEN

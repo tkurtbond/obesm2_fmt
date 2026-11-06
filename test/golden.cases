@@ -29,49 +29,49 @@
 # file with a "==== exit 1 ====" line; any other status but 0 fails.
 
 # ---- terse (step 5) ----
-ada    t          *-2e   -t
-ada    s-t        *-2e   -s -t
-ada    t-bold     *-2e   -t -b -l -M
-ada    t-italic   *-2e   -t -i -n
-ada    t-bold-it  *-2e   -t -b -i
-ada    t-page     *-2e   -t -p
-ada    t-page-D   *-2e   -t -p -D
-ada    t-under    *-2e   -t -u = -U ~
-ada    t-last     *-2e   -H -m -t
+ada    t          @(*-2e|*-ext)   -t
+ada    s-t        @(*-2e|*-ext)   -s -t
+ada    t-bold     @(*-2e|*-ext)   -t -b -l -M
+ada    t-italic   @(*-2e|*-ext)   -t -i -n
+ada    t-bold-it  @(*-2e|*-ext)   -t -b -i
+ada    t-page     @(*-2e|*-ext)   -t -p
+ada    t-page-D   @(*-2e|*-ext)   -t -p -D
+ada    t-under    @(*-2e|*-ext)   -t -u = -U ~
+ada    t-last     @(*-2e|*-ext)   -H -m -t
 
 # ---- grid, the default (step 6) ----
-ada    grid       *-2e
-ada    s          *-2e   -s
-ada    one        *-2e   -1
-ada    one-s-B    *-2e   -1 -s -B
-ada    no-bold    *-2e   -B -D
-ada    ascii      *-2e   -s -n
-ada    w72        *-2e   -w 72
-ada    w25        *-2e   -w 25
-ada    under      *-2e   -u = -U ~
-ada    emph       *-2e   -b -i -l -M -p
+ada    grid       @(*-2e|*-ext)
+ada    s          @(*-2e|*-ext)   -s
+ada    one        @(*-2e|*-ext)   -1
+ada    one-s-B    @(*-2e|*-ext)   -1 -s -B
+ada    no-bold    @(*-2e|*-ext)   -B -D
+ada    ascii      @(*-2e|*-ext)   -s -n
+ada    w72        @(*-2e|*-ext)   -w 72
+ada    w25        @(*-2e|*-ext)   -w 25
+ada    under      @(*-2e|*-ext)   -u = -U ~
+ada    emph       @(*-2e|*-ext)   -b -i -l -M -p
 
 # ---- h-m-m (step 7) ----
-ada    hmm        *-2e   -H
-ada    hmm-s      *-2e   -H -s
-ada    hmm-S      *-2e   -H -S
-ada    hmm-sS     *-2e   -H -s -S
-ada    hmm-bold   *-2e   -H -b
-ada    hmm-emph   *-2e   -H -i -l -M
-ada    hmm-L2     *-2e   -H -L 2
-ada    hmm-D-n    *-2e   -H -D -n
-ada    hmm-root   *-2e   -H -R Root -L 1
-ada    t-hmm      *-2e   -t -H
+ada    hmm        @(*-2e|*-ext)   -H
+ada    hmm-s      @(*-2e|*-ext)   -H -s
+ada    hmm-S      @(*-2e|*-ext)   -H -S
+ada    hmm-sS     @(*-2e|*-ext)   -H -s -S
+ada    hmm-bold   @(*-2e|*-ext)   -H -b
+ada    hmm-emph   @(*-2e|*-ext)   -H -i -l -M
+ada    hmm-L2     @(*-2e|*-ext)   -H -L 2
+ada    hmm-D-n    @(*-2e|*-ext)   -H -D -n
+ada    hmm-root   @(*-2e|*-ext)   -H -R Root -L 1
+ada    t-hmm      @(*-2e|*-ext)   -t -H
 
 # ---- raw ms (step 8) ----
-ada    ms         *-2e   -m
-ada    ms-s       *-2e   -m -s
-ada    ms-s-n     *-2e   -m -s -n
-ada    ms-D       *-2e   -m -D
-ada    ms-emph    *-2e   -m -b -i -l -M -p
-ada    ms-under   *-2e   -m -u = -U ~
-ada    ms-one     *-2e   -m -1 -B -w 30
-ada    hmm-t-ms   *-2e   -H -t -m
+ada    ms         @(*-2e|*-ext)   -m
+ada    ms-s       @(*-2e|*-ext)   -m -s
+ada    ms-s-n     @(*-2e|*-ext)   -m -s -n
+ada    ms-D       @(*-2e|*-ext)   -m -D
+ada    ms-emph    @(*-2e|*-ext)   -m -b -i -l -M -p
+ada    ms-under   @(*-2e|*-ext)   -m -u = -U ~
+ada    ms-one     @(*-2e|*-ext)   -m -1 -B -w 30
+ada    hmm-t-ms   @(*-2e|*-ext)   -H -t -m
 
 # ---- input errors, several files, standard input, -o (step 9) ----
 # Only standard output is compared for bad input: the messages differ

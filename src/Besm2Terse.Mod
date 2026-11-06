@@ -13,15 +13,22 @@ TYPE
 
 (* "N CP" for points, "N BP" for a negative number (bonus points), or
    "N MP"/"N MBP" for a mecha: the number is always written without a
-   sign. *)
-PROCEDURE AddLabelPoints(VAR b: Buffer; points: INTEGER; mecha: BOOLEAN);
+   sign.  marked: an overridden number, with Besm2Layout.OverrideMark
+   after it. *)
+PROCEDURE AddMarkedLabelPoints(VAR b: Buffer; points: INTEGER; mecha, marked: BOOLEAN);
 BEGIN
-  Besm2Str.AddInt(b, ABS(points)); Besm2Str.AddChar(b, " ");
+  Besm2Str.AddInt(b, ABS(points));
+  IF marked THEN Besm2Str.Add(b, Besm2Layout.OverrideMark) END;
+  Besm2Str.AddChar(b, " ");
   IF mecha THEN
     IF points < 0 THEN Besm2Str.Add(b, "MBP") ELSE Besm2Str.Add(b, "MP") END
   ELSE
     IF points < 0 THEN Besm2Str.Add(b, "BP") ELSE Besm2Str.Add(b, "CP") END
   END
+END AddMarkedLabelPoints;
+
+PROCEDURE AddLabelPoints(VAR b: Buffer; points: INTEGER; mecha: BOOLEAN);
+BEGIN AddMarkedLabelPoints(b, points, mecha, FALSE)
 END AddLabelPoints;
 
 PROCEDURE LabelPoints(points: INTEGER; mecha: BOOLEAN): String;
@@ -56,7 +63,7 @@ PROCEDURE Stat(s: Besm2Entities.Stat; mecha: BOOLEAN): String;
 BEGIN
   Besm2Str.Reset(b);
   Besm2Str.Add(b, s.name^); Besm2Str.AddChar(b, " "); Besm2Str.Add(b, s.value^);
-  Besm2Str.Add(b, " ("); AddLabelPoints(b, s.points, mecha); Besm2Str.AddChar(b, ")");
+  Besm2Str.Add(b, " ("); AddMarkedLabelPoints(b, s.points, mecha, s.pointsMark); Besm2Str.AddChar(b, ")");
   RETURN Besm2Str.Get(b)
 END Stat;
 
@@ -65,6 +72,7 @@ PROCEDURE Derived(d: Besm2Entities.Derived): String;
 BEGIN
   Besm2Str.Reset(b);
   Besm2Str.Add(b, d.name^); Besm2Str.AddChar(b, " "); Besm2Str.Add(b, d.value^);
+  IF d.valueMark THEN Besm2Str.Add(b, Besm2Layout.OverrideMark) END;
   IF d.alternatives.n > 0 THEN
     alts := Besm2Str.Join(d.alternatives, ", ");
     Besm2Str.Add(b, " ("); Besm2Str.Add(b, alts^); Besm2Str.AddChar(b, ")")
@@ -78,8 +86,10 @@ BEGIN
   Besm2Str.Reset(b);
   e := NameAndLevel(a.name, a.level); AddEmphasized(b, e^);
   Besm2Str.Add(b, " (");
-  IF Besm2Str.Length(a.details^) > 0 THEN Besm2Str.Add(b, a.details^); Besm2Str.Add(b, ". ") END;
-  AddLabelPoints(b, a.points, mecha); Besm2Str.AddChar(b, ")");
+  IF Besm2Str.Length(a.markedDetails^) > 0 THEN
+    Besm2Str.Add(b, a.markedDetails^); Besm2Str.Add(b, ". ")
+  END;
+  AddMarkedLabelPoints(b, a.points, mecha, a.pointsMark); Besm2Str.AddChar(b, ")");
   RETURN Besm2Str.Get(b)
 END Attribute;
 
@@ -90,7 +100,7 @@ BEGIN
   AddEmphasized(b, d.name^);
   Besm2Str.Add(b, " (");
   IF Besm2Str.Length(d.details^) > 0 THEN Besm2Str.Add(b, d.details^); Besm2Str.Add(b, ". ") END;
-  AddLabelPoints(b, d.points, mecha); Besm2Str.AddChar(b, ")");
+  AddMarkedLabelPoints(b, d.points, mecha, d.pointsMark); Besm2Str.AddChar(b, ")");
   RETURN Besm2Str.Get(b)
 END Defect;
 
@@ -103,7 +113,9 @@ BEGIN
   IF s.specialisations.n > 0 THEN
     e := Besm2Str.Join(s.specialisations, ", "); Besm2Str.Add(b, e^); Besm2Str.Add(b, ". ")
   END;
-  Besm2Str.AddInt(b, s.points); Besm2Str.Add(b, " SP)");
+  Besm2Str.AddInt(b, s.points);
+  IF s.pointsMark THEN Besm2Str.Add(b, Besm2Layout.OverrideMark) END;
+  Besm2Str.Add(b, " SP)");
   RETURN Besm2Str.Get(b)
 END Skill;
 

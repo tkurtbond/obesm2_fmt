@@ -32,39 +32,60 @@ TYPE
   NamedDesc* = RECORD name-: String END;
 
   Stat* = POINTER TO StatDesc;
+  (* A number's "overrides:" (besm2_cg_po's PLAN.md, A4): the keys of
+     its mapping whose number the user typed instead of the generator's.
+     The terse and grid formats print an overridden number with
+     Besm2Layout.OverrideMark after it; the others print it plain.  Each
+     mapping accepts only the keys of its computed numbers: points on a
+     stat, attribute, defect or skill, damage on an attribute, value on
+     a derived value.  Any other name is bad input.  The *Mark fields
+     are TRUE for an overridden number. *)
   StatDesc* = RECORD (NamedDesc)
     value-: String;
-    points-: INTEGER
+    points-: INTEGER;
+    pointsMark-: BOOLEAN                  (* overrides: [points] *)
   END;
 
   Derived* = POINTER TO DerivedDesc;
   DerivedDesc* = RECORD (NamedDesc)
     value-: String;
-    alternatives-: Besm2Str.List          (* none: n = 0 *)
+    alternatives-: Besm2Str.List;         (* none: n = 0 *)
+    valueMark-: BOOLEAN                   (* overrides: [value] *)
   END;
 
   Attribute* = POINTER TO AttributeDesc;
   AttributeDesc* = RECORD (NamedDesc)
+    (* The name has its "subject", if any, after ": " (A4): the packed
+       name a file without "subject" has. *)
     (* With " (effective)" already added when there is one: every
        format does it the same way. *)
     level-: String;
     points-: INTEGER;
     (* make-attribute-details: elements, enhancements and limiters, and
-       the details text, combined; "" for none. *)
-    details-: String
+       the details text, combined; "" for none.  Before them, a Weapon
+       Attack's "abilities", "disabilities", "different-gunner" and
+       "damage", in the book's order (p. 92); after the elements, the
+       "choices" (A4). *)
+    details-: String;
+    (* details with OverrideMark after the damage when it is
+       overridden (overrides: [damage]); else the same as details. *)
+    markedDetails-: String;
+    pointsMark-: BOOLEAN                  (* overrides: [points] *)
   END;
 
   Defect* = POINTER TO DefectDesc;
-  DefectDesc* = RECORD (NamedDesc)
+  DefectDesc* = RECORD (NamedDesc)       (* name: with its "subject", as an attribute's *)
     points-: INTEGER;
-    details-: String                      (* trimmed; "" for none *)
+    details-: String;                     (* trimmed; "" for none *)
+    pointsMark-: BOOLEAN                  (* overrides: [points] *)
   END;
 
   Skill* = POINTER TO SkillDesc;
   SkillDesc* = RECORD (NamedDesc)
     level-: String;
     points-: INTEGER;
-    specialisations-: Besm2Str.List       (* none: n = 0 *)
+    specialisations-: Besm2Str.List;      (* none: n = 0 *)
+    pointsMark-: BOOLEAN                  (* overrides: [points] *)
   END;
 
   Items = POINTER TO ARRAY OF Named;
@@ -208,6 +229,135 @@ BEGIN
   RETURN Sequence(m, key, seq) & ((seq = NIL) OR Strings(seq, l))
 END StringList;
 
+(* ---- The keys besm2_cg_po's PLAN.md, A4, adds, all optional ---- *)
+
+(* m's name, with its "subject", trimmed, after ": " if it has one: the
+   packed name ("Own a Big Mecha: FV2021 Coleopteran") a file without
+   "subject" holds in "name".  The Ada Name_With_Subject. *)
+PROCEDURE NameWithSubject(m: Fyaml.Node; VAR s: String): BOOLEAN;
+  VAR subject: String;
+BEGIN
+  IF ~Required(m, "name", s) OR ~Optional(m, "subject", subject) THEN RETURN FALSE END;
+  IF subject # NIL THEN subject := Besm2Str.Trim(subject^); s := Besm2Str.Concat3(s^, ": ", subject^) END;
+  RETURN TRUE
+END NameWithSubject;
+
+(* Whether s contains t, as the Ada Index (s, t) > 0. *)
+PROCEDURE Contains(VAR s, t: ARRAY OF CHAR): BOOLEAN;
+  VAR i, j, ls, lt: LONGINT;
+BEGIN
+  ls := Besm2Str.Length(s); lt := Besm2Str.Length(t);
+  FOR i := 0 TO ls - lt DO
+    j := 0;
+    WHILE (j < lt) & (s[i + j] = t[j]) DO INC(j) END;
+    IF j = lt THEN RETURN TRUE END
+  END;
+  RETURN FALSE
+END Contains;
+
+(* marked: whether m's "overrides:" lists key.  The list must be a
+   sequence of scalars, each one of allowed (key names separated by
+   ", "): a misspelled name would otherwise silently drop a mark.  The
+   test is the Ada one, ", NAME, " in ", ALLOWED, ". *)
+PROCEDURE Overridden(m: Fyaml.Node; key, allowed: ARRAY OF CHAR; VAR marked: BOOLEAN): BOOLEAN;
+  VAR seq, item: Fyaml.Node; it: Fyaml.ItemIter; t: Fyaml.String; all, one, msg: String;
+    b: Besm2Str.Buffer;
+BEGIN
+  marked := FALSE;
+  IF ~Sequence(m, "overrides", seq) THEN RETURN FALSE END;
+  IF seq # NIL THEN
+    all := Besm2Str.Concat3(", ", allowed, ", ");
+    seq.Items(it);
+    WHILE it.Next(item) DO
+      IF ~item.IsScalar() THEN RETURN Fail(item, "an override is not a key name") END;
+      t := item.Scalar();
+      one := Besm2Str.Concat3(", ", t^, ", ");
+      IF ~Contains(all^, one^) THEN
+        Besm2Str.Reset(b);
+        Besm2Str.AddChar(b, '"'); Besm2Str.Add(b, t^); Besm2Str.Add(b, '" is not one of ');
+        Besm2Str.Add(b, allowed);
+        msg := Besm2Str.Get(b);
+        RETURN Fail(item, msg^)
+      END;
+      IF t^ = key THEN marked := TRUE END
+    END
+  END;
+  RETURN TRUE
+END Overridden;
+
+(* An item of a Weapon Attack's "abilities" or "disabilities", or of an
+   attribute's "choices": a name, or a mapping of "name", "counts-as" (a
+   positive count, written "×N" when 2 or more) and, but for a choice,
+   "detail" (written in brackets).  The Ada Format_Item. *)
+PROCEDURE FormatItem(item: Fyaml.Node; detailAllowed: BOOLEAN; VAR s: String): BOOLEAN;
+  VAR b: Besm2Str.Buffer; name, detail, times: String; countsAs: INTEGER;
+BEGIN
+  IF item.IsScalar() THEN
+    IF ~Scalar(item, s) THEN RETURN FALSE END;
+    s := Besm2Str.Trim(s^);
+    RETURN TRUE
+  END;
+  IF ~item.IsMapping() THEN RETURN Fail(item, "not a name or a mapping") END;
+  IF ~Required(item, "name", name)
+     OR ~item.IntegerFieldOr("counts-as", 1, countsAs, yamlError) THEN
+    RETURN FALSE
+  END;
+  IF countsAs < 1 THEN RETURN Fail(item.Value("counts-as"), "counts-as must be positive") END;
+  Besm2Str.Reset(b);
+  name := Besm2Str.Trim(name^); Besm2Str.Add(b, name^);
+  IF countsAs >= 2 THEN
+    times := Besm2Layout.TimesGlyph();
+    Besm2Str.AddChar(b, " "); Besm2Str.Add(b, times^); Besm2Str.AddInt(b, countsAs)
+  END;
+  IF detailAllowed & item.HasKey("detail") THEN
+    IF ~Required(item, "detail", detail) THEN RETURN FALSE END;
+    detail := Besm2Str.Trim(detail^);
+    Besm2Str.Add(b, " ["); Besm2Str.Add(b, detail^); Besm2Str.AddChar(b, "]")
+  END;
+  s := Besm2Str.Get(b);
+  RETURN TRUE
+END FormatItem;
+
+(* The items of the sequence for key (none if absent), each read by
+   FormatItem, appended to l. *)
+PROCEDURE FormatItems(m: Fyaml.Node; key: ARRAY OF CHAR; detailAllowed: BOOLEAN;
+                      VAR l: Besm2Str.List): BOOLEAN;
+  VAR seq, item: Fyaml.Node; it: Fyaml.ItemIter; s: String;
+BEGIN
+  IF ~Sequence(m, key, seq) THEN RETURN FALSE END;
+  IF seq # NIL THEN
+    seq.Items(it);
+    WHILE it.Next(item) DO
+      IF ~FormatItem(item, detailAllowed, s) THEN RETURN FALSE END;
+      Besm2Str.Append(l, s)
+    END
+  END;
+  RETURN TRUE
+END FormatItems;
+
+(* A Weapon Attack's structured keys, as the book records an attack
+   (p. 92): its Abilities, its Disabilities, "Different Gunner", then
+   "N Damage" (with mark after N); "" if it has none of them.  The Ada
+   Weapon_Part. *)
+PROCEDURE WeaponPart(m: Fyaml.Node; mark: ARRAY OF CHAR; VAR s: String): BOOLEAN;
+  VAR parts: Besm2Str.List; gunner: BOOLEAN; damage: INTEGER; b: Besm2Str.Buffer;
+BEGIN
+  Besm2Str.Clear(parts);
+  IF ~FormatItems(m, "abilities", TRUE, parts) OR ~FormatItems(m, "disabilities", TRUE, parts)
+     OR ~m.BooleanFieldOr("different-gunner", FALSE, gunner, yamlError) THEN
+    RETURN FALSE
+  END;
+  IF gunner THEN Besm2Str.Append(parts, Besm2Str.Of("Different Gunner")) END;
+  IF m.HasKey("damage") THEN
+    IF ~Integer(m, "damage", damage) THEN RETURN FALSE END;
+    Besm2Str.Reset(b);
+    Besm2Str.AddInt(b, damage); Besm2Str.Add(b, mark); Besm2Str.Add(b, " Damage");
+    Besm2Str.Append(parts, Besm2Str.Get(b))
+  END;
+  s := Besm2Str.Join(parts, ", ");
+  RETURN TRUE
+END WeaponPart;
+
 (* ---- Enhancements, limiters and attribute details ---- *)
 
 (* An enhancement counts as a minus in the details text and a limiter as
@@ -283,17 +433,24 @@ BEGIN
   RETURN TRUE
 END Customizers;
 
-(* besm2-rst.scm's make-attribute-details: the elements, sorted and
-   joined with ", "; then the enhancements and limiters together, sorted
-   and joined with ", "; then the details text; the non-empty ones of
-   those joined with "; ".  "" if all three are empty. *)
-PROCEDURE AttributeDetails(m: Fyaml.Node; detailsText: String; VAR s: String): BOOLEAN;
-  VAR parts, elements, custom: Besm2Str.List; enhancements, limiters: Fyaml.Node;
+(* besm2-rst.scm's make-attribute-details: weapon (a Weapon Attack's
+   structured keys, from WeaponPart); the elements, sorted and joined
+   with ", "; the choices (A4), likewise; then the enhancements and
+   limiters together, sorted and joined with ", "; then the details
+   text; the non-empty ones of those joined with "; ".  "" if all are
+   empty. *)
+PROCEDURE AttributeDetails(m: Fyaml.Node; weapon, detailsText: String; VAR s: String): BOOLEAN;
+  VAR parts, elements, choices, custom: Besm2Str.List; enhancements, limiters: Fyaml.Node;
 BEGIN
-  Besm2Str.Clear(parts); Besm2Str.Clear(custom);
+  Besm2Str.Clear(parts); Besm2Str.Clear(custom); Besm2Str.Clear(choices);
+  IF Besm2Str.Length(weapon^) > 0 THEN Besm2Str.Append(parts, weapon) END;
   IF ~StringList(m, "elements", elements) THEN RETURN FALSE END;
   IF elements.n > 0 THEN
     Besm2Str.SortCI(elements); Besm2Str.Append(parts, Besm2Str.Join(elements, ", "))
+  END;
+  IF ~FormatItems(m, "choices", FALSE, choices) THEN RETURN FALSE END;
+  IF choices.n > 0 THEN
+    Besm2Str.SortCI(choices); Besm2Str.Append(parts, Besm2Str.Join(choices, ", "))
   END;
   IF ~Sequence(m, "enhancements", enhancements) OR ~Sequence(m, "limiters", limiters)
      OR ~Customizers(enhancements, Enhancement, custom)
@@ -324,6 +481,7 @@ BEGIN
   NEW(s); x := s;
   RETURN Required(m, "name", s.name) & Required(m, "value", s.value)
          & Integer(m, "points", s.points)
+         & Overridden(m, "points", "points", s.pointsMark)
 END LoadStat;
 
 PROCEDURE LoadDerived(m: Fyaml.Node; VAR x: Named): BOOLEAN;
@@ -332,32 +490,44 @@ BEGIN
   NEW(d); x := d;
   RETURN Required(m, "name", d.name) & Required(m, "value", d.value)
          & StringList(m, "alternatives", d.alternatives)
+         & Overridden(m, "value", "value", d.valueMark)
 END LoadDerived;
 
 (* level is required, for every attribute, mecha ones included:
    besm-tools commit 6139f21, ported to the Ada version too. *)
 PROCEDURE LoadAttribute(m: Fyaml.Node; VAR x: Named): BOOLEAN;
-  VAR a: Attribute; detailsText, effective: String;
+  CONST allowed = "points, damage";
+  VAR a: Attribute; detailsText, effective, weapon, markedWeapon: String;
+    damageMarked: BOOLEAN;
 BEGIN
   NEW(a); x := a;
-  IF ~Required(m, "name", a.name) OR ~Integer(m, "points", a.points)
+  IF ~NameWithSubject(m, a.name) OR ~Integer(m, "points", a.points)
      OR ~Required(m, "level", a.level) OR ~Details(m, detailsText)
-     OR ~Optional(m, "effective", effective) THEN
+     OR ~Optional(m, "effective", effective)
+     OR ~Overridden(m, "damage", allowed, damageMarked)
+     OR ~Overridden(m, "points", allowed, a.pointsMark) THEN
     RETURN FALSE
   END;
   IF (effective # NIL) & (Besm2Str.Length(effective^) > 0) THEN
     a.level := Besm2Str.Concat3(a.level^, " (", effective^);
     a.level := Besm2Str.Concat(a.level^, ")")
   END;
-  RETURN AttributeDetails(m, detailsText, a.details)
+  IF ~WeaponPart(m, "", weapon) THEN RETURN FALSE END;
+  IF damageMarked THEN
+    IF ~WeaponPart(m, Besm2Layout.OverrideMark, markedWeapon) THEN RETURN FALSE END
+  ELSE markedWeapon := weapon
+  END;
+  RETURN AttributeDetails(m, weapon, detailsText, a.details)
+         & AttributeDetails(m, markedWeapon, detailsText, a.markedDetails)
 END LoadAttribute;
 
 PROCEDURE LoadDefect(m: Fyaml.Node; VAR x: Named): BOOLEAN;
   VAR d: Defect;
 BEGIN
   NEW(d); x := d;
-  RETURN Required(m, "name", d.name) & Integer(m, "points", d.points)
+  RETURN NameWithSubject(m, d.name) & Integer(m, "points", d.points)
          & Details(m, d.details)
+         & Overridden(m, "points", "points", d.pointsMark)
 END LoadDefect;
 
 PROCEDURE LoadSkill(m: Fyaml.Node; VAR x: Named): BOOLEAN;
@@ -367,6 +537,7 @@ BEGIN
   RETURN Required(m, "name", s.name) & Required(m, "level", s.level)
          & Integer(m, "points", s.points)
          & StringList(m, "specialisations", s.specialisations)
+         & Overridden(m, "points", "points", s.pointsMark)
 END LoadSkill;
 
 (* ---- Entities ---- *)

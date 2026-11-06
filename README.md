@@ -62,9 +62,18 @@ Law 1 (Military.  1 SP)
 A file holds a YAML sequence of entities, and may hold several
 `---`-separated documents. Each entity may have `name`, `tagline`,
 `description`, `size`, `mecha` (a boolean), `stats`, `derived`,
-`attributes`, `defects` and `skills`. Attributes and defects can also
+`attributes`, `defects`, `skills` and `notes`. Attributes and defects can also
 have `enhancements`, `limiters`, `elements`, `effective` and
 `details`. `test/data/synthetic-2e.yaml` uses every field.
+
+The keys besm2_cg_po adds (its PLAN.md, A4) are all optional, and
+`test/data/keys-ext.yaml` uses every one: `subject` on an attribute or
+defect (printed as `name: subject`); on an attribute, `choices`, and
+a Weapon Attack's `abilities`, `disabilities`, `different-gunner` and
+`damage`; and `overrides` on a stat, derived value, attribute, defect
+or skill, which marks an overridden number with `\*` in the terse and
+grid formats. A defect's `level`, a Weapon Attack's `primary` and an
+entity's `creation` print nothing.
 
 ## Usage
 

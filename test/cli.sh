@@ -112,6 +112,26 @@ check "a counts-as that isn't positive is reported in the Ada wording, with its 
   "$data/bad-counts-as.yaml"
 check "a note that isn't a string is reported with its path" 1 \
   'error processing .*bad-notes\.yaml: /1/notes/0: not a scalar$' "$data/bad-notes.yaml"
+check "an override that isn't one of the mapping's numbers is reported with its path" 1 \
+  'error processing .*bad-overrides\.yaml: /1/attributes/0/overrides/0: "pionts" is not one of points, damage$' \
+  "$data/bad-overrides.yaml"
+check "an override that isn't a name is reported with its path" 1 \
+  'error processing .*bad-overrides\.yaml: /2/skills/0/overrides/0: an override is not a key name$' \
+  "$data/bad-overrides.yaml"
+check "a stat's value can't be overridden" 1 \
+  'error processing .*bad-overrides\.yaml: /3/stats/0/overrides/0: "value" is not one of points$' \
+  "$data/bad-overrides.yaml"
+check "a weapon Ability that isn't a name or a mapping is reported with its path" 1 \
+  'error processing .*bad-weapon\.yaml: /1/attributes/0/abilities/0: not a name or a mapping$' \
+  "$data/bad-weapon.yaml"
+check "a weapon Disability with no name is reported with its path" 1 \
+  '^besm2_fmt: .*bad-weapon\.yaml: error: /2/attributes/0/disabilities/0: missing required key "name"$' \
+  "$data/bad-weapon.yaml"
+check "a weapon counts-as that isn't positive is reported with its path" 1 \
+  'error processing .*bad-weapon\.yaml: /3/attributes/0/disabilities/0/counts-as: counts-as must be positive$' \
+  "$data/bad-weapon.yaml"
+check "weapon Abilities that aren't a list are reported with their path" 1 \
+  'error processing .*bad-weapon\.yaml: /4/attributes/0/abilities: not a sequence$' "$data/bad-weapon.yaml"
 check "a file with no documents is not an error" 0 '' "$data/edge-empty.yaml"
 check "an empty document is an error" 1 \
   'expected a top-level YAML sequence of entities in .*bad-empty-doc\.yaml$' "$data/bad-empty-doc.yaml"

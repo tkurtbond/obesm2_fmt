@@ -58,7 +58,7 @@ warning. The port's own behaviour in 2a.2 is a defect too.
 
 | # | Ada behaviour | Port behaviour | Found |
 |---|---|---|---|
-| 2a.1 | **YAML aliases aren't resolved.** `points: *p` (with `&p 6` earlier) gives `error processing FILE: not a valid integer: "p"`. `name: *n` prints the alias's name, `n`, without complaint. An aliased entity (`- *h`) gives `/2: not a mapping`. The entity is skipped and the run exits 1. | Aliases are resolved, as YAML says (olibfyaml), exit 0. | besm2_cg_po A1 |
+| 2a.1 | **YAML aliases aren't resolved.** `points: *p` (with `&p 6` earlier) gives `error processing FILE: /0/stats/1/points: not a valid integer: "p"`. `name: *n` prints the alias's name, `n`, without complaint. An aliased entity (`- *h`) gives `/2: not a mapping`. The entity is skipped and the run exits 1. | Aliases are resolved, as YAML says (olibfyaml), exit 0. | besm2_cg_po A1 |
 | 2a.2 | **A total too big for an integer stops the run.** Each `points` value is in range, but their sum isn't (`points: 2147483647` plus `points: 2`): `raised CONSTRAINT_ERROR : besm2_fmt-entities.adb:351 overflow check failed`, status 1. The message names neither the value nor the entity, and the rest of the file is lost. | Wraps silently: `Hero (2147483647 BP)`, status 0. | besm2_cg_po A1 |
 
 ## 3. Deliberate differences between the Ada version and the port
@@ -72,7 +72,7 @@ compare these.
 | 3.2 | Standard input is called `(stdin)` in messages | `(stdin)` too, since olibfyaml's change of 2026-10-10; `<stdin>` before | No longer a difference. |
 | 3.3 | Usage text and command-line error messages in Ada arg_parser's words (`Invalid value for option -w: "24" is not in range 25..2147483647`), usage not repeated after an error | ArgParser's (`Error: Value out of range for option -w, --width.`, then the usage) | Different library. Same exit statuses. |
 | 3.4 | A file that can't be opened: `besm2_fmt: nosuch.yaml: No such file or directory` | `besm2_fmt: nosuch.yaml: error: No such file or directory` | As 3.1. |
-| 3.5 | Bad data found by the YAML library (a missing key, a bad integer) is reported without a path or position: `error processing FILE: missing required key "points"` | With both: `FILE: error: /1/stats/0: missing required key "points"` | As 3.1; the shape errors the programs find themselves (1.3) read the same in both. |
+| 3.5 | Bad data found by the YAML library (a missing key, a bad integer) is reported with its path, and the line and column when the bad value has them: `error processing FILE: /1/stats/0: missing required key "points"`, `error processing FILE:5:42: /1/stats/0/points: not a valid integer: "lots"` | The same path, line and column: `FILE: error: /1/stats/0: missing required key "points"`, `FILE:5:42: error: /1/stats/0/points: not a valid integer: "lots"` | As 3.1. The path, line and column are the same in both since alibfyaml's change of 2026-11-06, which put them at the start of its messages; before it the Ada gave neither. The shape errors the programs find themselves (1.3) read the same in both. |
 
 ## 4. Where the Ada version departs from `besm2-rst`, and the port follows Ada
 
