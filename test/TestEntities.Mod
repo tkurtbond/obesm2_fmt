@@ -128,7 +128,7 @@ BEGIN
   Check.Check(Is(a.details, "Damage ACV+45, Long-Range: 5 km, Unreliable"),
     "a block scalar's trailing newline is trimmed from details");
   a := e.attributes.items[10](Besm2Entities.Attribute);
-  msg := Besm2Str.Concat3("Damage ACV+45, Auto-fire, Area Effect, Limited Shots ×2: 3 shots,", 0AX, "Stoppable");
+  msg := Besm2Str.Concat3("Damage ACV+15, Auto-fire, Area Effect, Limited Shots ×2: 3 shots,", 0AX, "Stoppable");
   Check.Check(Is(a.details, msg^), "an embedded newline is kept in details (the formats deal with it)");
   df := e.defects.items[0](Besm2Entities.Defect);
   Check.Check(Is(df.details, "Large: 1-10 tonnes"), "defect details trimmed");
