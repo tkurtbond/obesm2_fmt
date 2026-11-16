@@ -395,6 +395,9 @@ BEGIN
     part := item.Item(0);
     IF ~Scalar(part, name) THEN RETURN FALSE END;
     part := item.Item(1);
+    (* IntegerValue halts on a node that isn't a scalar (Fyaml.AssertKind):
+       a programmer error to the binding, but here it's bad input. *)
+    IF ~part.IsScalar() THEN RETURN Fail(part, "not a scalar") END;
     IF ~part.IntegerValue(countsAs, yamlError) THEN RETURN FALSE END;
     Besm2Str.Add(b, name^);
     IF len > 2 THEN

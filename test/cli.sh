@@ -96,6 +96,14 @@ check "YAML of the wrong shape is an input error, not a halt" 1 \
 check "a customizer of one item is an input error, not a halt" 1 \
   'error processing .*shape-customizer-short\.yaml: /1/attributes/0/enhancements/0: customizer sequence too short$' \
   "$data/shape-customizer-short.yaml"
+# A counts-as that isn't a scalar is an input error, not a halt in
+# IntegerValue (OBESM2_FMT-BUGS.md, bug 2).
+printf -- '- name: Good\n  stats: [{name: Body, value: 4, points: 8}]\n- name: Short\n  attributes: [{name: A, level: 1, points: 2, enhancements: [[Foo, {a: 1}]]}]\n' >"$tmp/enh.yaml"
+check "an enhancement's counts-as that is a mapping is an input error, not a halt" 1 \
+  'error processing .*enh\.yaml: /1/attributes/0/enhancements/0/1: not a scalar$' "$tmp/enh.yaml"
+printf -- '- name: Good\n  stats: [{name: Body, value: 4, points: 8}]\n- name: Short\n  attributes: [{name: A, level: 1, points: 2, limiters: [[Foo, [1]]]}]\n' >"$tmp/lim.yaml"
+check "a limiter's counts-as that is a sequence is an input error, not a halt" 1 \
+  'error processing .*lim\.yaml: /1/attributes/0/limiters/0/1: not a scalar$' "$tmp/lim.yaml"
 check "stats: with no value is an input error, not a halt" 1 \
   'error processing .*shape-null-stats\.yaml: /1/stats: not a sequence$' "$data/shape-null-stats.yaml"
 check "YAML that doesn't parse is reported gcc style" 1 \
@@ -152,6 +160,25 @@ fi
 printf -- 'a: 1\n' >"$tmp/map.yaml"
 check "a top level that isn't a sequence is reported" 1 \
   'expected a top-level YAML sequence of entities in .*map\.yaml$' "$tmp/map.yaml"
+
+# An alias that can't be resolved is an input error, not a quiet end of
+# the file with status 0 (OBESM2_FMT-BUGS.md, bug 1, fixed in olibfyaml).
+# The documents before it are written; libfyaml can't go on after it.
+printf -- '- name: *nope\n' >"$tmp/alias.yaml"
+check "an undefined alias is reported, exit 1" 1 \
+  '^besm2_fmt: .*alias\.yaml:1:10: error: invalid alias$' "$tmp/alias.yaml"
+printf -- '- &a [*a]\n' >"$tmp/cycle.yaml"
+check "a cyclic reference is reported, exit 1" 1 \
+  '^besm2_fmt: .*cycle\.yaml:1:8: error: cyclic reference detected$' "$tmp/cycle.yaml"
+printf -- '---\n- name: Good\n---\n- name: *nope\n---\n- name: Third\n' >"$tmp/alias2.yaml"
+"$prog" "$tmp/alias2.yaml" >"$tmp/out" 2>&1
+status=$?
+if [ $status -eq 1 ] && grep -q '^Good$' "$tmp/out" && ! grep -q 'Third' "$tmp/out" \
+   && grep -q 'alias2\.yaml:4:10: error: invalid alias$' "$tmp/out"; then
+  echo "ok   - the document before an undefined alias is written, then the error"
+else
+  echo "FAIL - the document before an undefined alias is written, then the error"; sed 's/^/    /' "$tmp/out"; failed=$((failed + 1))
+fi
 
 # -R/--hmm-root goes into the file under -o, first, with the rest.
 "$prog" -H -R Root -L 2 -o "$tmp/file" "$f" >"$tmp/stdout" 2>&1

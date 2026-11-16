@@ -36,9 +36,13 @@ $(error CFLAGS below name x86-64 registers; see the comment there for what anoth
 endif
 export CFLAGS := -ffixed-rbx -ffixed-r12 -ffixed-r13 -ffixed-r14 -ffixed-r15
 
-# ArgParser.Mod and Err.Mod are installed by the ArgParser repo into the
-# first directory of VOC_OBERON_MODULES (colon-separated); olibfyaml's
-# modules are used from its checkout.  Neither is copied here.
+# ArgParser.Mod and Err.Mod are installed by the ArgParser repo, and
+# olibfyaml's modules by olibfyaml's make install, into the first
+# directory of VOC_OBERON_MODULES (colon-separated).  Neither is copied
+# here.  vpath searches its directories in order, so an installed
+# olibfyaml module is used before the one in the OLIBFYAML checkout,
+# which is only a fallback: after changing olibfyaml, run make install
+# there before rebuilding here.
 VOC_OBERON_MODULES ?= /usr/local/sw/versions/oberon/voc/include/
 OLIBFYAML      ?= $(HOME)/Repos/Oberon/olibfyaml
 vpath %.Mod rtl src test $(subst :, ,$(VOC_OBERON_MODULES)) $(OLIBFYAML)/src
