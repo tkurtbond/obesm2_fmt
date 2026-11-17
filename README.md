@@ -153,6 +153,19 @@ elsewhere.
 `make golden` regenerates the golden test files from the Ada binary
 and `besm2-rst`. It's needed only when test cases are added.
 
+## BESM and the rulebook
+
+*Big Eyes, Small Mouth*, Second Edition Revised, is © 2002 Guardians
+of Order, Inc. BESM and the Tri-Stat System now belong to Dyskami
+Publishing Company, whose Tri-Stat® System is a registered trademark.
+This project is not affiliated with or endorsed by either. It formats
+character files that you write, and holds no text from the rules.
+
+The test fixtures in `test/data/` are characters made for the tests,
+except for the FV2021 Coleopteran mecha, converted from a sample in
+*Big Robots, Cool Starships* (© 1999 Guardians of Order) so that the
+output can be checked against it; its description is paraphrased.
+
 ## Documents
 
 - [AGENTS.md](AGENTS.md): working notes on the build, the tests and
