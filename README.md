@@ -125,7 +125,7 @@ You need:
   (override with `VOC=`).
 - libfyaml, found through `pkg-config`.
 - `ArgParser.Mod` and `Err.Mod` from
-  [ArgParser](https://github.com/tkurtbond/ArgParser), installed into
+  [ArgParser](https://github.com/tkurtbond/oberon-argparser), installed into
   `VOC_OBERON_MODULES` (default `/usr/local/sw/versions/oberon/voc/include`).
 - A checkout of olibfyaml at `OLIBFYAML` (default
   `~/Repos/Oberon/olibfyaml`).
