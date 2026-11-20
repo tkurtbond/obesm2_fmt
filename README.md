@@ -176,3 +176,5 @@ output can be checked against it; its description is paraphrased.
   against the Ada version, from `make benchmark`.
 - [ADA-DIFFERENCES.md](ADA-DIFFERENCES.md): every known way the Ada
   version differs from the port or is defective.
+- [VOC-GC-BUG.md](VOC-GC-BUG.md): voc's collector and the callee-saved
+  registers, and why the build forbids them.
