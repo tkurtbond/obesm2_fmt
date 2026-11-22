@@ -12,6 +12,8 @@
 
 SHELL = bash
 
+PANDOC ?= pandoc
+
 VOC      ?= /usr/local/sw/versions/voc/git/bin/voc
 # Size model: olibfyaml requires -OC, and models can't be mixed, so
 # every module here -- ArgParser's and olibfyaml's included -- gets it.
@@ -241,7 +243,7 @@ $(BUILD)/%-tbl-ascii-minus-nosubtotals.gen.rst: test/data/%.yaml $(PROGRAM) | $(
 
 #MS_COLUMNS = -V twocolumns
 $(BUILD)/%.ms.pdf: $(BUILD)/%.gen.rst
-	pandoc -r rst -w ms --template=tkb $(MS_COLUMNS) -o $@ $<
+	$(PANDOC) -r rst -w ms --template=tkb $(MS_COLUMNS) -o $@ $<
 
 .PRECIOUS: $(BUILD)/%.gen.rst
 
